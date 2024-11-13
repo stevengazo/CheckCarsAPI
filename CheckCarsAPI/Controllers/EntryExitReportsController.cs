@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CheckCars.Models;
+using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
 using Microsoft.AspNetCore.Authorization;
 
@@ -48,9 +48,9 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/EntryExitReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEntryExitReport(int id, EntryExitReport entryExitReport)
+        public async Task<IActionResult> PutEntryExitReport(string id, EntryExitReport entryExitReport)
         {
-            if (id != entryExitReport.ReportId)
+            if (!id.Equals(entryExitReport.ReportId))
             {
                 return BadRequest();
             }
@@ -103,9 +103,9 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        private bool EntryExitReportExists(int id)
+        private bool EntryExitReportExists(string id)
         {
-            return _context.EntryExitReports.Any(e => e.ReportId == id);
+            return _context.EntryExitReports.Any(e => e.ReportId.Equals(id));
         }
     }
 }

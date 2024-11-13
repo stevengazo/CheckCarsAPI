@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace CheckCars.Models
+namespace CheckCarsAPI.Models
 {
     public class EntryExitReport : Report
     {

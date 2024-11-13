@@ -5,54 +5,54 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
+using CheckCarsAPI.Models;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PhotosController : ControllerBase
+    public class CarServicesController : ControllerBase
     {
         private readonly ReportsDbContext _context;
 
-        public PhotosController(ReportsDbContext context)
+        public CarServicesController(ReportsDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Photos
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Photo>>> GetPhotos()
+        // GET: api/CarServices
+        [HttpGet()]
+        public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService()
         {
-            return await _context.Photos.ToListAsync();
+            return await _context.CarsService.ToListAsync();
         }
 
-        // GET: api/Photos/5
+        // GET: api/CarServices/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Photo>> GetPhoto(int id)
+        public async Task<ActionResult<CarService>> GetCarService(int id)
         {
-            var photo = await _context.Photos.FindAsync(id);
+            var carService = await _context.CarsService.FindAsync(id);
 
-            if (photo == null)
+            if (carService == null)
             {
                 return NotFound();
             }
 
-            return photo;
+            return carService;
         }
 
-        // PUT: api/Photos/5
+        // PUT: api/CarServices/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPhoto(int id, Photo photo)
+        public async Task<IActionResult> PutCarService(int id, CarService carService)
         {
-            if (id != photo.PhotoId)
+            if (id != carService.CarServiceId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(photo).State = EntityState.Modified;
+            _context.Entry(carService).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +60,7 @@ namespace CheckCarsAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PhotoExists(id))
+                if (!CarServiceExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +73,36 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Photos
+        // POST: api/CarServices
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Photo>> PostPhoto(Photo photo)
+        public async Task<ActionResult<CarService>> PostCarService(CarService carService)
         {
-            _context.Photos.Add(photo);
+            _context.CarsService.Add(carService);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPhoto", new { id = photo.PhotoId }, photo);
+            return CreatedAtAction("GetCarService", new { id = carService.CarServiceId }, carService);
         }
 
-        // DELETE: api/Photos/5
+        // DELETE: api/CarServices/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePhoto(int id)
+        public async Task<IActionResult> DeleteCarService(int id)
         {
-            var photo = await _context.Photos.FindAsync(id);
-            if (photo == null)
+            var carService = await _context.CarsService.FindAsync(id);
+            if (carService == null)
             {
                 return NotFound();
             }
 
-            _context.Photos.Remove(photo);
+            _context.CarsService.Remove(carService);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool PhotoExists(int id)
+        private bool CarServiceExists(int id)
         {
-            return _context.Photos.Any(e => e.PhotoId == id);
+            return _context.CarsService.Any(e => e.CarServiceId == id);
         }
     }
 }

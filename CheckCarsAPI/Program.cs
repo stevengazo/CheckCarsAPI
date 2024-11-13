@@ -46,6 +46,13 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+    // Para que Swagger muestre el soporte para archivos y datos JSON
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "API with File Upload",
+        Version = "v1"
+    });
+
 });
 
 builder.Services

@@ -1,4 +1,4 @@
-﻿using CheckCars.Models;
+﻿using CheckCarsAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CheckCarsAPI.Data
@@ -9,6 +9,9 @@ namespace CheckCarsAPI.Data
         public DbSet<EntryExitReport> EntryExitReports { get; set; }
         public DbSet<IssueReport> IssueReports { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<Car> Cars { get; set; }
+        public DbSet<CarService> CarsService { get; set; }
+
 
         public ReportsDbContext(DbContextOptions options) : base( options)
         {

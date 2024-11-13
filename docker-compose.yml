@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  checkcarsapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=TestCheckCarsUsers;User Id=sa;Password=Siera4388$;TrustServerCertificate=True;
+      - ConnectionStrings__ReportsConnection=Server=sqlserver,1433;Database=TestCheckCarsReports;User Id=sa;Password=Siera4388$;TrustServerCertificate=True;
+      - Jwt__Issuer=yourdomain.com
+      - Jwt__Audience=yourdomain.com
+      - Jwt__Key=c3VwZXJzZWN1cmVzc2ltdWx0YXBhc3N3b3JkYmFzaWNhbmdsaWZl
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Siera4388$
+    ports:
+      - "1433:1433"
+    networks:
+      - app-network
+    volumes:
+      - sql-data:/var/opt/mssql
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  sql-data:
+    driver: local

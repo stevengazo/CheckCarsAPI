@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CheckCars.Models;
+using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
 
 namespace CheckCarsAPI.Controllers
@@ -45,9 +45,9 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/IssueReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIssueReport(int id, IssueReport issueReport)
+        public async Task<IActionResult> PutIssueReport(string id, IssueReport issueReport)
         {
-            if (id != issueReport.ReportId)
+            if (!id.Equals(issueReport.ReportId))
             {
                 return BadRequest();
             }
@@ -76,10 +76,26 @@ namespace CheckCarsAPI.Controllers
         // POST: api/IssueReports
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<IssueReport>> PostIssueReport(IssueReport issueReport)
+        public async Task<ActionResult<IssueReport>> PostIssueReport([FromForm] List<IFormFile> images, IssueReport issueReport)
         {
             _context.IssueReports.Add(issueReport);
             await _context.SaveChangesAsync();
+
+
+            // Crear una lista para almacenar los datos de las imágenes
+            var imageDatas = new List<byte[]>();
+
+            // Procesar cada imagen si está presente
+            if (images != null && images.Count > 0)
+            {
+                foreach (var image in images)
+                {
+                    using var memoryStream = new MemoryStream();
+                    await image.CopyToAsync(memoryStream);
+                    imageDatas.Add(memoryStream.ToArray()); // Agrega la imagen en formato de bytes a la lista
+                }
+               // issueReport. = imageDatas; // Asumiendo que tienes una propiedad ImageDataList en IssueReport
+            }
 
             return CreatedAtAction("GetIssueReport", new { id = issueReport.ReportId }, issueReport);
         }
@@ -100,9 +116,9 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        private bool IssueReportExists(int id)
+        private bool IssueReportExists(string id)
         {
-            return _context.IssueReports.Any(e => e.ReportId == id);
+            return _context.IssueReports.Any(e => e.ReportId.Equals( id) );
         }
     }
 }

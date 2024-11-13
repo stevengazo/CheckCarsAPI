@@ -5,54 +5,61 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
+using CheckCarsAPI.Models;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CrashReportsController : ControllerBase
+    public class CarsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
 
-        public CrashReportsController(ReportsDbContext context)
+        public CarsController(ReportsDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/CrashReports
+        // GET: api/Cars
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CrashReport>>> GetCrashReports()
+        public async Task<ActionResult<IEnumerable<Car>>> GetCars()
         {
-            return await _context.CrashReports.ToListAsync();
+            return await _context.Cars.ToListAsync();
         }
 
-        // GET: api/CrashReports/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CrashReport>> GetCrashReport(int id)
+        // GET: api/Cars/Plates
+        [HttpGet("plates")]
+        public async Task<ActionResult<string[]>> GetCarsPlates()
         {
-            var crashReport = await _context.CrashReports.FindAsync(id);
+            return await _context.Cars.Select( e=> e.Model + "-" + e.Plate).ToArrayAsync();
+        }
 
-            if (crashReport == null)
+        // GET: api/Cars/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Car>> GetCar(int id)
+        {
+            var car = await _context.Cars.FindAsync(id);
+
+            if (car == null)
             {
                 return NotFound();
             }
 
-            return crashReport;
+            return car;
         }
 
-        // PUT: api/CrashReports/5
+        // PUT: api/Cars/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCrashReport(string id, CrashReport crashReport)
+        public async Task<IActionResult> PutCar(int id, Car car)
         {
-            if (!id.Equals(crashReport.ReportId)  )
+            if (id != car.CarId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(crashReport).State = EntityState.Modified;
+            _context.Entry(car).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +67,7 @@ namespace CheckCarsAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CrashReportExists(id))
+                if (!CarExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +80,36 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/CrashReports
+        // POST: api/Cars
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<CrashReport>> PostCrashReport(CrashReport crashReport)
+        public async Task<ActionResult<Car>> PostCar(Car car)
         {
-            _context.CrashReports.Add(crashReport);
+            _context.Cars.Add(car);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCrashReport", new { id = crashReport.ReportId }, crashReport);
+            return CreatedAtAction("GetCar", new { id = car.CarId }, car);
         }
 
-        // DELETE: api/CrashReports/5
+        // DELETE: api/Cars/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCrashReport(int id)
+        public async Task<IActionResult> DeleteCar(int id)
         {
-            var crashReport = await _context.CrashReports.FindAsync(id);
-            if (crashReport == null)
+            var car = await _context.Cars.FindAsync(id);
+            if (car == null)
             {
                 return NotFound();
             }
 
-            _context.CrashReports.Remove(crashReport);
+            _context.Cars.Remove(car);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool CrashReportExists(string id)
+        private bool CarExists(int id)
         {
-            return _context.CrashReports.Any(e => e.ReportId.Equals( id));
+            return _context.Cars.Any(e => e.CarId == id);
         }
     }
 }

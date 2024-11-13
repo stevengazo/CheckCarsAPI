@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CheckCars.Models
+namespace CheckCarsAPI.Models
 {
     public class Photo
     {
@@ -16,9 +16,8 @@ namespace CheckCars.Models
         public string FileName { get; set; }
         public string FilePath { get; set; }
         public DateTime DateTaken { get; set; }
-
         [ForeignKey("Report")]
-        public int ReportId { get; set; }
+        public string ReportId { get; set; }
         public Report Report { get; set; }
 
     }

@@ -13,13 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-       options.UseInMemoryDatabase(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentityCore<IdentityUser>()
-       .AddRoles<IdentityRole>()
+builder.Services.AddIdentity<IdentityUser,IdentityRole>()
        .AddEntityFrameworkStores<ApplicationDbContext>()
        .AddDefaultTokenProviders();
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+       options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services
     .AddAuthentication(options =>
@@ -57,11 +57,8 @@ using (var scope = app.Services.CreateScope())
         dbContext.Database.Migrate();  // Aplica las migraciones pendientes automáticamente
     }
     catch (Exception r)
-    {
-
-      
-    }
-   
+    {  
+    }  
 }
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -73,8 +70,8 @@ if (app.Environment.IsDevelopment())
 
 
 
+app.UseAuthentication();  // Asegúrate de llamar a UseAuthentication
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();

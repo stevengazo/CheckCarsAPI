@@ -14,12 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 
-builder.Services.AddIdentity<IdentityUser,IdentityRole>()
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
        .AddEntityFrameworkStores<ApplicationDbContext>()
        .AddDefaultTokenProviders();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-       options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ReportsDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
 
 builder.Services
     .AddAuthentication(options =>
@@ -48,7 +48,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
-
+#region Create Databases 
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ReportsDbContext>();
+        dbContext.Database.Migrate();  // Aplica las migraciones pendientes automáticamente
+    }
+    catch (Exception r)
+    {
+    }
+}
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -57,18 +68,17 @@ using (var scope = app.Services.CreateScope())
         dbContext.Database.Migrate();  // Aplica las migraciones pendientes automáticamente
     }
     catch (Exception r)
-    {  
-    }  
+    {
+    }
 }
+#endregion
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-
-
 
 app.UseAuthentication();  // Asegúrate de llamar a UseAuthentication
 app.UseHttpsRedirection();

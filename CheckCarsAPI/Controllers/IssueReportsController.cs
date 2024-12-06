@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class IssueReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
@@ -76,28 +78,36 @@ namespace CheckCarsAPI.Controllers
         // POST: api/IssueReports
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<IssueReport>> PostIssueReport([FromForm] List<IFormFile> images, IssueReport issueReport)
+        public async Task<ActionResult<IssueReport>> PostIssueReport([FromForm] List<IFormFile> Images, [FromForm]  IssueReport issueReport)
         {
-            _context.IssueReports.Add(issueReport);
-            await _context.SaveChangesAsync();
-
-
-            // Crear una lista para almacenar los datos de las imágenes
-            var imageDatas = new List<byte[]>();
-
-            // Procesar cada imagen si está presente
-            if (images != null && images.Count > 0)
+            try
             {
-                foreach (var image in images)
-                {
-                    using var memoryStream = new MemoryStream();
-                    await image.CopyToAsync(memoryStream);
-                    imageDatas.Add(memoryStream.ToArray()); // Agrega la imagen en formato de bytes a la lista
-                }
-               // issueReport. = imageDatas; // Asumiendo que tienes una propiedad ImageDataList en IssueReport
-            }
+                _context.IssueReports.Add(issueReport);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetIssueReport", new { id = issueReport.ReportId }, issueReport);
+
+                // Crear una lista para almacenar los datos de las imágenes
+                var imageDatas = new List<byte[]>();
+
+                // Procesar cada imagen si está presente
+                if (Images != null && Images.Count > 0)
+                {
+                    foreach (var image in Images)
+                    {
+                        using var memoryStream = new MemoryStream();
+                        await image.CopyToAsync(memoryStream);
+                        imageDatas.Add(memoryStream.ToArray()); // Agrega la imagen en formato de bytes a la lista
+                    }
+                    // issueReport. = imageDatas; // Asumiendo que tienes una propiedad ImageDataList en IssueReport
+                }
+
+                return CreatedAtAction("GetIssueReport", new { id = issueReport.ReportId }, issueReport);
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
         }
 
         // DELETE: api/IssueReports/5

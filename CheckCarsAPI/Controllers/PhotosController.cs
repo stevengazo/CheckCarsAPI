@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PhotosController : ControllerBase
     {
         private readonly ReportsDbContext _context;

@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CrashReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
@@ -23,6 +25,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/CrashReports
         [HttpGet]
+
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetCrashReports()
         {
             return await _context.CrashReports.ToListAsync();

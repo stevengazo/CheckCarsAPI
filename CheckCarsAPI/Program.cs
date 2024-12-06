@@ -13,14 +13,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-
+// Add Identity Service
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
        .AddEntityFrameworkStores<ApplicationDbContext>()
        .AddDefaultTokenProviders();
 
+// Add Databases Context
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddDbContext<ReportsDbContext>( options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
+builder.Services.AddDbContext<ReportsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
 
+//
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AnyOrigin",
+        builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        );
+});
 
 // Add Swagger services
 builder.Services.AddSwaggerGen(c =>
@@ -54,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 
 });
-
+// Authentication And JWT
 builder.Services
     .AddAuthentication(options =>
     {
@@ -88,7 +99,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ReportsDbContext>();
-        dbContext.Database.Migrate();  // Aplica las migraciones pendientes automáticamente
+        dbContext.Database.Migrate();  // Aplica las migraciones pendientes automï¿½ticamente
     }
     catch (Exception r)
     {
@@ -99,7 +110,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();  // Aplica las migraciones pendientes automáticamente
+        dbContext.Database.Migrate();  // Aplica las migraciones pendientes automï¿½ticamente
     }
     catch (Exception r)
     {
@@ -114,7 +125,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication();  // Asegúrate de llamar a UseAuthentication
+app.UseCors("AnyOrigin");
+
+app.UseAuthentication();  // Asegï¿½rate de llamar a UseAuthentication
 app.UseHttpsRedirection();
 app.UseAuthorization();
 

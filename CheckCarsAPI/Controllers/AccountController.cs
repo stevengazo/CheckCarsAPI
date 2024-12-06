@@ -36,7 +36,6 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(result);
         }
 
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -63,7 +62,7 @@ namespace CheckCarsAPI.Controllers
                     issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddMinutes(30),
+                    expires: DateTime.Now.AddMonths(2),
                     signingCredentials: creds);
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }

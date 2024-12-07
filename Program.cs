@@ -101,6 +101,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception r)
     {
+        Console.WriteLine(r.Message);
     }
 }
 using (var scope = app.Services.CreateScope())
@@ -112,6 +113,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception r)
     {
+        Console.WriteLine(r.Message);
     }
 }
 #endregion

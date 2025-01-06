@@ -9,8 +9,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
 // Add services to the container.
 
 // Add Identity Service
@@ -103,6 +101,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception r)
     {
+        Console.WriteLine(r.Message);
     }
 }
 using (var scope = app.Services.CreateScope())
@@ -114,12 +113,18 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception r)
     {
+        Console.WriteLine(r.Message);
     }
 }
 #endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+else
 {
     app.UseSwagger();
     app.UseSwaggerUI();

@@ -13,7 +13,7 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+   // [Authorize]
     public class CarsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
@@ -78,7 +78,6 @@ namespace CheckCarsAPI.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 

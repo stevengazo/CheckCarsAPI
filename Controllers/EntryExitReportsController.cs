@@ -10,6 +10,9 @@ using CheckCarsAPI.Data;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using System.Text.Json;
+using System.Diagnostics;
+using Microsoft.Data.SqlClient;
+using NuGet.Protocol;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -77,50 +80,30 @@ namespace CheckCarsAPI.Controllers
         }
 
 
-        // Declarar la lista estática para almacenar temporalmente los JSON
-        private static List<EntryExitReport> tmpdu = new List<EntryExitReport>();
-
+        //POST: api/EntryExitReports
         [HttpPost]
         public async Task<ActionResult<string>> PostEntryExitReport([FromForm] IFormCollection formData)
         {
             try
             {
-            var ReceiveFiles = formData.Files.ToList();
-            var ReceiveData = formData.ToList();
-
-            // Print each data from ReceiveData to console
-            foreach (var data in ReceiveData)
-            {
-                Console.WriteLine($"{data.Key}: {data.Value}");
+                // Get the images and the report data from the form data
+                var ImgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
+                List<EntryExitReport> entryExits = formData.Select(x => JsonConvert.DeserializeObject<EntryExitReport>(x.Value)).ToList();
+                List<Photo> photos = entryExits.SelectMany(e => e.Photos).ToList();
+                // Save the report to the database
+                _context.EntryExitReports.AddRange(entryExits);
+                await _context.SaveChangesAsync();
+                // Save the images to the file system
+                var ReportId = entryExits[0].ReportId;
+                // Save the images to the file system and DB
+                await SaveImagesAsync(ImgFiles, ReportId, photos);
+                return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExits[0].ReportId }, entryExits);
             }
-
-            // Save files to ./images directory
-            var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
-            if (!Directory.Exists(imagesPath))
+            catch (SqlException e)
             {
-                Directory.CreateDirectory(imagesPath);
-            }
-
-            foreach (var file in ReceiveFiles)
-            {
-                if (file.Length > 0)
-                {
-                var filePath = Path.Combine(imagesPath, file.FileName);
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-                }
-            }
-
-            return Ok("Datos recibidos y procesados exitosamente.");
-            }
-            catch (Exception e)
-            {
-            return BadRequest($"Error al procesar la solicitud: {e.Message}");
+                return BadRequest($"Error processing the request: {e.InnerException?.Message}");
             }
         }
-
 
 
         // DELETE: api/EntryExitReports/5
@@ -133,16 +116,63 @@ namespace CheckCarsAPI.Controllers
             {
                 return NotFound();
             }
-
             _context.EntryExitReports.Remove(entryExitReport);
             await _context.SaveChangesAsync();
-
             return NoContent();
+        }
+
+        #region  Private Methods
+        /// <summary>
+        /// Saves a list of images asynchronously to a specified directory and updates the photo records in the database.
+        /// </summary>
+        /// <param name="files">The list of image files to be saved.</param>
+        /// <param name="reportId">The report ID used to create a subdirectory for the images. Default is null.</param>
+        /// <param name="photos">The list of photo objects to be updated with the file paths. Default is null.</param>
+        /// <returns>A task that represents the asynchronous save operation.</returns>
+        /// <exception cref="System.Exception">Thrown when an error occurs during the save operation.</exception>
+        private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
+        {
+            try
+            {
+                /// Get the Path of The images folder
+                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "entries", reportId);
+                if (!Directory.Exists(imagesPath))
+                {
+                    Directory.CreateDirectory(imagesPath);
+                }
+                foreach (var file in files)
+                {
+                    // Get the Photo with the same fileName and delete the photo from the list
+                    var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
+                    photos.Remove(photo);
+                    // Save the image to the file system and update the photo object
+                    if (file.Length > 0)
+                    {
+                        var filePath = Path.Combine(imagesPath, file.FileName);
+                        photo.FilePath = filePath;
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        // add the photo updated to the list
+                        photos.Add(photo);
+                    }
+                }
+                // Update the photos in the database
+                _context.Photos.UpdateRange(photos);
+                await _context.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
         }
 
         private bool EntryExitReportExists(string id)
         {
             return _context.EntryExitReports.Any(e => e.ReportId.Equals(id));
         }
+        #endregion
     }
 }

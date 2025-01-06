@@ -18,8 +18,10 @@ namespace CheckCarsAPI.Models
         public string? CarPlate { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public ICollection<Photo>? Photos { get; set; }
-        public int CarId { get; set; }
-        public Car Car { get; set; }
+        public ICollection<Photo>? Photos { get; set; } = new List<Photo>();
+        public int? CarId { get; set; }  
+        public Car? Car { get; set; } 
     }
 }
+
+

@@ -30,25 +30,22 @@ namespace CheckCarsAPI.Migrations.Reports
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CarId"));
 
-                    b.Property<DateTime>("AdquisitionDate")
+                    b.Property<DateTime?>("AdquisitionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Brand")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Color")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FuelType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Height")
+                    b.Property<double?>("Height")
                         .HasColumnType("float");
 
-                    b.Property<double>("Lenght")
+                    b.Property<double?>("Lenght")
                         .HasColumnType("float");
 
                     b.Property<string>("Model")
@@ -56,28 +53,24 @@ namespace CheckCarsAPI.Migrations.Reports
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Plate")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VIN")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Weight")
+                    b.Property<double?>("Weight")
                         .HasColumnType("float");
 
-                    b.Property<double>("Width")
+                    b.Property<double?>("Width")
                         .HasColumnType("float");
 
-                    b.Property<int>("Year")
+                    b.Property<int?>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("CarId");
@@ -156,7 +149,7 @@ namespace CheckCarsAPI.Migrations.Reports
                     b.Property<string>("Author")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CarId")
+                    b.Property<int?>("CarId")
                         .HasColumnType("int");
 
                     b.Property<string>("CarPlate")
@@ -297,9 +290,7 @@ namespace CheckCarsAPI.Migrations.Reports
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("CrashReports")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarId");
 
                     b.Navigation("Car");
                 });
@@ -308,9 +299,7 @@ namespace CheckCarsAPI.Migrations.Reports
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("EntryExitReports")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarId");
 
                     b.Navigation("Car");
                 });
@@ -319,9 +308,7 @@ namespace CheckCarsAPI.Migrations.Reports
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("IssueReports")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarId");
 
                     b.Navigation("Car");
                 });

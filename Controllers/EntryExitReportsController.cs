@@ -84,20 +84,32 @@ namespace CheckCarsAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> PostEntryExitReport([FromForm] IFormCollection formData)
         {
+
+
             try
             {
                 // Get the images and the report data from the form data
                 var ImgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                List<EntryExitReport> entryExits = formData.Select(x => JsonConvert.DeserializeObject<EntryExitReport>(x.Value)).ToList();
-                List<Photo> photos = entryExits.SelectMany(e => e.Photos).ToList();
+                EntryExitReport entryExits = formData.Select(x => JsonConvert.DeserializeObject<EntryExitReport>(x.Value)).FirstOrDefault();
+
+                if(entryExits != null)
+                {
+                    var Exists = _context.EntryExitReports.Any(e => e.ReportId == entryExits.ReportId);
+                    if (Exists)
+                    {
+                        return BadRequest("The report already exists");
+                    }
+                }
+
+                List<Photo> photos = entryExits.Photos.ToList();
                 // Save the report to the database
-                _context.EntryExitReports.AddRange(entryExits);
+                _context.EntryExitReports.Add(entryExits);
                 await _context.SaveChangesAsync();
                 // Save the images to the file system
-                var ReportId = entryExits[0].ReportId;
+                var ReportId = entryExits.ReportId;
                 // Save the images to the file system and DB
                 await SaveImagesAsync(ImgFiles, ReportId, photos);
-                return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExits[0].ReportId }, entryExits);
+                return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExits.ReportId }, entryExits);
             }
             catch (SqlException e)
             {

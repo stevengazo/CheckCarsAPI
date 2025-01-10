@@ -113,11 +113,8 @@ namespace CheckCarsAPI.Migrations.Reports
 
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
-                    b.Property<int>("PhotoId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PhotoId"));
+                    b.Property<string>("PhotoId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateTaken")
                         .HasColumnType("datetime2");

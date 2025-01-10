@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.Reports
 {
     /// <inheritdoc />
-    public partial class ReportMigrations : Migration
+    public partial class ReportInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,8 +41,7 @@ namespace CheckCarsAPI.Migrations.Reports
                 name: "Photos",
                 columns: table => new
                 {
-                    PhotoId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PhotoId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateTaken = table.Column<DateTime>(type: "datetime2", nullable: false),

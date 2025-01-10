@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CheckCarsAPI.Migrations.Reports
 {
     [DbContext(typeof(ReportsDbContext))]
-    [Migration("20241209170019_ReportMigrations")]
-    partial class ReportMigrations
+    [Migration("20250110212941_ReportInitial")]
+    partial class ReportInitial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -116,11 +116,8 @@ namespace CheckCarsAPI.Migrations.Reports
 
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
-                    b.Property<int>("PhotoId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PhotoId"));
+                    b.Property<string>("PhotoId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateTaken")
                         .HasColumnType("datetime2");

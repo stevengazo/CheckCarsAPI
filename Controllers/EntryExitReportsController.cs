@@ -89,10 +89,10 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 var exits = CheckEntryExitReport(entryExitReport.ReportId);
-                if(exits.Result)
+                if (exits.Result)
                 {
                     return BadRequest("The report already exists");
-                }   
+                }
                 _context.EntryExitReports.Add(entryExitReport);
                 await _context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExitReport.ReportId }, entryExitReport);
@@ -103,15 +103,20 @@ namespace CheckCarsAPI.Controllers
             }
         }
 
-// POST: api/EntryFullReport
+        // POST: api/EntryFullReport
         [HttpPost("form")]
         public async Task<ActionResult<string>> PostEntryExitReport([FromForm] IFormCollection formData)
         {
             try
             {
+                var options = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                };
                 // Obtener las imágenes y los datos del reporte desde el formulario
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData["entryExitReport"]);
+                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[nameof(EntryExitReport)], options);
+                Console.WriteLine(entryExits);
 
                 if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
                 {
@@ -119,6 +124,9 @@ namespace CheckCarsAPI.Controllers
                 }
 
                 List<Photo> photos = entryExits.Photos.ToList();
+
+                Console.Clear();
+                Console.WriteLine(entryExits);
 
                 _context.EntryExitReports.Add(entryExits);
                 await _context.SaveChangesAsync();
@@ -210,8 +218,9 @@ namespace CheckCarsAPI.Controllers
             }
             catch (System.Exception e)
             {
+
                 Console.WriteLine(e.Message);
-                throw;
+                //throw;
             }
         }
 

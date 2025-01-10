@@ -32,7 +32,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/Photos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Photo>> GetPhoto(int id)
+        public async Task<ActionResult<Photo>> GetPhoto(string id)
         {
             var photo = await _context.Photos.FindAsync(id);
 
@@ -47,7 +47,7 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/Photos/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPhoto(int id, Photo photo)
+        public async Task<IActionResult> PutPhoto(string id, Photo photo)
         {
             if (id != photo.PhotoId)
             {
@@ -102,7 +102,7 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        private bool PhotoExists(int id)
+        private bool PhotoExists(string id)
         {
             return _context.Photos.Any(e => e.PhotoId == id);
         }

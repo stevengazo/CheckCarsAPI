@@ -84,7 +84,7 @@ namespace CheckCarsAPI.Controllers
 
         // POST: api/EntryExitReport
         [HttpPost("json")]
-        public async Task<ActionResult<string>> PostEntryExitReport(EntryExitReport entryExitReport)
+        public async Task<ActionResult> PostEntryExitReport(EntryExitReport entryExitReport)
         {
             try
             {
@@ -105,10 +105,11 @@ namespace CheckCarsAPI.Controllers
 
         // POST: api/EntryFullReport
         [HttpPost("form")]
-        public async Task<ActionResult<string>> PostEntryExitReport([FromForm] IFormCollection formData)
+        public async Task<ActionResult> PostEntryExitReport([FromForm] IFormCollection formData)
         {
             try
             {
+                Console.WriteLine(formData[nameof(EntryExitReport)]);
                 var options = new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
@@ -116,8 +117,7 @@ namespace CheckCarsAPI.Controllers
                 // Obtener las imágenes y los datos del reporte desde el formulario
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
                 var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[nameof(EntryExitReport)], options);
-                Console.WriteLine(entryExits);
-
+                
                 if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
                 {
                     return BadRequest("The report already exists");
@@ -125,15 +125,12 @@ namespace CheckCarsAPI.Controllers
 
                 List<Photo> photos = entryExits.Photos.ToList();
 
-                Console.Clear();
-                Console.WriteLine(entryExits);
-
                 _context.EntryExitReports.Add(entryExits);
                 await _context.SaveChangesAsync();
 
                 await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
 
-                return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExits.ReportId }, entryExits);
+                return Created( "", entryExits); 
             }
             catch (SqlException e)
             {

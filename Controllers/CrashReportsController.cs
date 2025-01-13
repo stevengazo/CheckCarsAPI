@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.Data.SqlClient;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -94,48 +95,42 @@ namespace CheckCarsAPI.Controllers
             return CreatedAtAction("GetCrashReport", new { id = crashReport.ReportId }, crashReport);
         }
 
-        [HttpPost("form")]
+       [HttpPost("form")]
+
         public async Task<ActionResult> PostCrashReportForm([FromForm] IFormCollection formData)
         {
             try
             {
-                var OptionsJson = new JsonSerializerSettings()
+                var options = new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 };
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
+                var ObjectType = nameof(CheckCarsAPI.Models.CrashReport).Split('.').Last();
+                var CrashReport = JsonConvert.DeserializeObject<CrashReport>(formData[ObjectType], options);
 
-                CrashReport? crash = JsonConvert.DeserializeObject<CrashReport>(formData[nameof(CrashReport)], OptionsJson);
-                Console.WriteLine(crash);
-                if (crash == null)
+                if (CrashReport != null && await CrashReportExistsAsync(CrashReport.ReportId))
                 {
-                    return NotFound("Crash object is null");
+                    return Conflict("The report already exists");
                 }
 
-                if (await CrashReportExistsAsync(crash.ReportId))
-                {
-                    return Conflict("The Report Already Exists");
-                }
+                List<Photo> photos = CrashReport.Photos.ToList();
 
-                _context.CrashReports.Add(crash);
-                _context.SaveChangesAsync();
+                _context.CrashReports.Add(CrashReport);
+                await _context.SaveChangesAsync();
 
-                List<Photo> photos = crash.Photos.ToList();
-              
-                SaveImagesAsync(imgFiles, crash.ReportId, crash.Photos.ToList());
+                await SaveImagesAsync(imgFiles, CrashReport.ReportId, photos);
 
-                return Created("", crash.ReportId);
-
+                return Created("", CrashReport.ReportId);
             }
             catch (NullReferenceException e)
             {
                 Console.WriteLine(e.Message);
                 return BadRequest("The report is null");
             }
-            catch (System.Exception e)
+            catch (SqlException e)
             {
-                Console.WriteLine(e.Message);
-                throw;
+                return BadRequest($"Error processing the request: {e.InnerException?.Message}");
             }
         }
 
@@ -164,60 +159,45 @@ namespace CheckCarsAPI.Controllers
             return _context.CrashReports.Any(e => e.ReportId.Equals(id));
         }
 
-        /// <summary>
-        /// Saves a list of images asynchronously to a specified directory and updates the photo records in the database.
-        /// </summary>
-        /// <param name="files">The list of image files to be saved.</param>
-        /// <param name="reportId">The report ID used to create a subdirectory for the images. Default is null.</param>
-        /// <param name="photos">The list of photo objects to be updated with the file paths. Default is null.</param>
-        /// <returns>A task that represents the asynchronous save operation.</returns>
-        /// <exception cref="System.Exception">Thrown when an error occurs during the save operation.</exception>
        private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
-{
-    try
-    {
-        // Obtén la ruta de la carpeta de imágenes
-        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "crashes", reportId);
-        Directory.CreateDirectory(basePath);
-
-        var updatedPhotos = new List<Photo>(); // Lista para almacenar las fotos actualizadas
-
-        foreach (var file in files)
         {
-            // Encuentra la foto correspondiente en la lista
-            var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
-            if (photo != null) // Solo continúa si se encuentra la foto
+            try
             {
-                photos.Remove(photo); // Elimina la foto de la lista original
-
-                // Guardar la imagen en el sistema de archivos y actualizar el objeto de la foto
-                if (file.Length > 0)
+                /// Get the Path of The images folder
+                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "crashes", reportId);
+                if (!Directory.Exists(imagesPath))
                 {
-                    photo.FilePath = Path.Combine(basePath, file.FileName);
-                    using (var stream = new FileStream(photo.FilePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream); // Copiar el archivo al destino
-                    }
-
-                    // Añadir la foto actualizada a la lista de fotos procesadas
-                    updatedPhotos.Add(photo);
+                    Directory.CreateDirectory(imagesPath);
                 }
+                foreach (var file in files)
+                {
+                    // Get the Photo with the same fileName and delete the photo from the list
+                    var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
+                    photos.Remove(photo);
+                    // Save the image to the file system and update the photo object
+                    if (file.Length > 0)
+                    {
+                        var filePath = Path.Combine(imagesPath, file.FileName);
+                        photo.FilePath = filePath;
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        // add the photo updated to the list
+                        photos.Add(photo);
+                    }
+                }
+                // Update the photos in the database
+                _context.Photos.UpdateRange(photos);
+                await _context.SaveChangesAsync();
+            }
+            catch (System.Exception e)
+            {
+
+                Console.WriteLine(e.Message);
+                //throw;
             }
         }
-
-        // Actualizar las fotos en la base de datos con las fotos procesadas
-        if (updatedPhotos.Any())
-        {
-            _context.Photos.UpdateRange(updatedPhotos);
-            await _context.SaveChangesAsync();
-        }
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine(e.Message); // Manejo de excepciones
-        // Opcionalmente: lanzar o registrar la excepción
-    }
-}
 
 
         #endregion

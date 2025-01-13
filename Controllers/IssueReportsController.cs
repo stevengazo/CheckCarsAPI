@@ -20,6 +20,8 @@ namespace CheckCarsAPI.Controllers
     {
         private readonly ReportsDbContext _context;
 
+
+        #region  EndPoints
         public IssueReportsController(ReportsDbContext context)
         {
             _context = context;
@@ -100,28 +102,29 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                var imgFiles = formData.Files.Where(f => f.Name.Contains("image")).ToList();
-                var issue = JsonConvert.DeserializeObject<IssueReport>(
-                    formData[nameof(IssueReport)],
-                    new JsonSerializerSettings()
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    });
-                if (issue == null)
+                var options = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                };
+                var imgFiles = formData.Files.Where(f => f.ContentType.Contains("image")).ToList();
+                var issueReport = JsonConvert.DeserializeObject<IssueReport>(formData[nameof(IssueReport)], options);
+
+                if (issueReport == null)
                 {
                     return NotFound("The report is null");
                 }
-                if (await IssueReportExists(issue.ReportId))
+                if (await IssueReportExists(issueReport.ReportId))
                 {
                     return Conflict("The Report Already Exists");
                 }
 
-                List<Photo> photos = issue.Photos.ToList();
-                _context.IssueReports.Add(issue);
+                List<Photo> photosByReport = issueReport != null? issueReport.Photos.ToList(): new List<Photo>();
+                _context.IssueReports.Add(issueReport);
                 await _context.SaveChangesAsync();
-                SaveImagesAsync(imgFiles, issue.ReportId, photos);
 
-                return Created("", issue);
+                await SaveImagesAsync(imgFiles, issueReport.ReportId, photosByReport);
+
+                return Created("", issueReport);
             }
             catch (NullReferenceException e)
             {
@@ -151,6 +154,7 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
+        #endregion
         #region  Private methods
         private async Task<bool> IssueReportExists(string id)
         {
@@ -169,22 +173,21 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 /// Get the Path of The images folder
-                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "issues", reportId);
-                if (!Directory.Exists(imagesPath))
-                {
-                    Directory.CreateDirectory(imagesPath);
-                }
+                var basePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "issues", reportId);
+                Directory.CreateDirectory(basePath);
+
                 foreach (var file in files)
                 {
-                    // Get the Photo with the same fileName and delete the photo from the list
                     var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
-                    photos.Remove(photo);
-                    // Save the image to the file system and update the photo object
-                    if (file.Length > 0)
+                    Console.WriteLine(file.ToString());
+                    Console.WriteLine(photo.ToString());
+                    if (photo != null && file.Length > 0)
                     {
-                        var filePath = Path.Combine(imagesPath, file.FileName);
-                        photo.FilePath = filePath;
-                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        photos.Remove(photo);
+                        var newFullPathFile = Path.Combine(basePath, file.FileName);
+                        Console.WriteLine("new path:" + newFullPathFile);
+                        photo.FilePath = newFullPathFile;
+                        using (var stream = new FileStream(newFullPathFile, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
                         }
@@ -192,13 +195,13 @@ namespace CheckCarsAPI.Controllers
                         photos.Add(photo);
                     }
                 }
+                
                 // Update the photos in the database
                 _context.Photos.UpdateRange(photos);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
             catch (System.Exception e)
             {
-
                 Console.WriteLine(e.Message);
                 //throw;
             }

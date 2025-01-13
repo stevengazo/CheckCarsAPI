@@ -113,12 +113,9 @@ namespace CheckCarsAPI.Controllers
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 };
-                // Obtener las imágenes y los datos del reporte desde el formulario
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                Console.WriteLine(formData[nameof(EntryExitReport)]);
-                var type = nameof(EntryExitReport).Split('.').Last();   
-                Console.WriteLine(type);
-                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[type], options);
+                var ObjectType = nameof(EntryExitReport).Split('.').Last();   
+                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[ObjectType], options);
 
                 if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
                 {

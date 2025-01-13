@@ -99,12 +99,13 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                
-                CrashReport? crash = JsonConvert.DeserializeObject<CrashReport>(formData[nameof(CrashReport)], new JsonSerializerSettings()
+                var OptionsJson = new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                });
+                };
+                var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
+
+                CrashReport? crash = JsonConvert.DeserializeObject<CrashReport>(formData[nameof(CrashReport)], OptionsJson);
                 Console.WriteLine(crash);
                 if (crash == null)
                 {
@@ -121,6 +122,8 @@ namespace CheckCarsAPI.Controllers
 
 
                 List<Photo> photos = crash.Photos.ToList();
+                foreach (var item in photos)
+       
                 SaveImagesAsync(imgFiles, crash.ReportId, crash.Photos.ToList());
 
                 return Created("", crash);

@@ -30,7 +30,20 @@ namespace CheckCarsAPI.Controllers
             return await _context.Photos.ToListAsync();
         }
 
-        // GET: api/Photos/5
+        // GET: api/Photos/report/5
+        [HttpGet("report/{id}")]
+        public async Task<ActionResult<List<Photo>>> GetPhotosByReport(string id)
+        {
+            var photo = await _context.Photos.Where(e=>e.ReportId  == id).ToListAsync();
+
+            if (photo == null)
+            {
+                return NotFound();
+            }
+
+            return photo;
+        }
+      // GET: api/Photos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Photo>> GetPhoto(string id)
         {

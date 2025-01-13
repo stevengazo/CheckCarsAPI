@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -129,6 +130,18 @@ else
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+var path = Path.Combine(Directory.GetCurrentDirectory(),"images");
+if (!Directory.Exists(path))
+{
+    Directory.CreateDirectory(path);
+}
+app.UseStaticFiles(
+    new StaticFileOptions{
+        FileProvider= new PhysicalFileProvider(path),
+        RequestPath="/images"
+    }
+ );
 
 app.UseCors("AnyOrigin");
 

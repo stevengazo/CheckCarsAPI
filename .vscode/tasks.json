@@ -80,11 +80,17 @@
             "dependsOn": [
                 "docker-build: debug"
             ],
-            "dockerRun": {},
+            "dockerRun": {
+                "ports": [
+                    {
+                        "hostPort": 5001,
+                        "containerPort": 8080
+                    }
+                ]
+            },
             "netCore": {
                 "appProject": "${workspaceFolder}/CheckCarsAPI.csproj",
-                "enableDebugging": true,
-                
+                "enableDebugging": true
             }
         },
         {
@@ -93,7 +99,14 @@
             "dependsOn": [
                 "docker-build: release"
             ],
-            "dockerRun": {},
+            "dockerRun": {
+                "ports": [
+                    {
+                        "hostPort": 5001,
+                        "containerPort": 8080
+                    }
+                ]
+            },
             "netCore": {
                 "appProject": "${workspaceFolder}/CheckCarsAPI.csproj"
             }

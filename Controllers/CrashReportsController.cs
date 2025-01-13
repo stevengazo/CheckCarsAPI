@@ -120,13 +120,11 @@ namespace CheckCarsAPI.Controllers
                 _context.CrashReports.Add(crash);
                 _context.SaveChangesAsync();
 
-
                 List<Photo> photos = crash.Photos.ToList();
-                foreach (var item in photos)
-       
+              
                 SaveImagesAsync(imgFiles, crash.ReportId, crash.Photos.ToList());
 
-                return Created("", crash);
+                return Created("", crash.ReportId);
 
             }
             catch (NullReferenceException e)
@@ -174,45 +172,53 @@ namespace CheckCarsAPI.Controllers
         /// <param name="photos">The list of photo objects to be updated with the file paths. Default is null.</param>
         /// <returns>A task that represents the asynchronous save operation.</returns>
         /// <exception cref="System.Exception">Thrown when an error occurs during the save operation.</exception>
-        private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
-        {
-            try
-            {
-                /// Get the Path of The images folder
-                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "issues", reportId);
-                if (!Directory.Exists(imagesPath))
-                {
-                    Directory.CreateDirectory(imagesPath);
-                }
-                foreach (var file in files)
-                {
-                    // Get the Photo with the same fileName and delete the photo from the list
-                    var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
-                    photos.Remove(photo);
-                    // Save the image to the file system and update the photo object
-                    if (file.Length > 0)
-                    {
-                        var filePath = Path.Combine(imagesPath, file.FileName);
-                        photo.FilePath = filePath;
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        // add the photo updated to the list
-                        photos.Add(photo);
-                    }
-                }
-                // Update the photos in the database
-                _context.Photos.UpdateRange(photos);
-                await _context.SaveChangesAsync();
-            }
-            catch (System.Exception e)
-            {
+       private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
+{
+    try
+    {
+        // Obtén la ruta de la carpeta de imágenes
+        var basePath = Path.Combine(Directory.GetCurrentDirectory(), "images", "crashes", reportId);
+        Directory.CreateDirectory(basePath);
 
-                Console.WriteLine(e.Message);
-                //throw;
+        var updatedPhotos = new List<Photo>(); // Lista para almacenar las fotos actualizadas
+
+        foreach (var file in files)
+        {
+            // Encuentra la foto correspondiente en la lista
+            var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
+            if (photo != null) // Solo continúa si se encuentra la foto
+            {
+                photos.Remove(photo); // Elimina la foto de la lista original
+
+                // Guardar la imagen en el sistema de archivos y actualizar el objeto de la foto
+                if (file.Length > 0)
+                {
+                    photo.FilePath = Path.Combine(basePath, file.FileName);
+                    using (var stream = new FileStream(photo.FilePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream); // Copiar el archivo al destino
+                    }
+
+                    // Añadir la foto actualizada a la lista de fotos procesadas
+                    updatedPhotos.Add(photo);
+                }
             }
         }
+
+        // Actualizar las fotos en la base de datos con las fotos procesadas
+        if (updatedPhotos.Any())
+        {
+            _context.Photos.UpdateRange(updatedPhotos);
+            await _context.SaveChangesAsync();
+        }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message); // Manejo de excepciones
+        // Opcionalmente: lanzar o registrar la excepción
+    }
+}
+
 
         #endregion
     }

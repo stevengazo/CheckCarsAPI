@@ -129,7 +129,7 @@ namespace CheckCarsAPI.Controllers
 
                 await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
 
-                return Created("", entryExits);
+                return Created("", entryExits.ReportId);
             }
             catch (NullReferenceException e)
             {

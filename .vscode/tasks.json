@@ -93,11 +93,7 @@
             "dependsOn": [
                 "docker-build: release"
             ],
-            "dockerRun": {
-                "ports": [
-                    "5000:80"
-                ]
-            },
+            "dockerRun": {},
             "netCore": {
                 "appProject": "${workspaceFolder}/CheckCarsAPI.csproj"
             }

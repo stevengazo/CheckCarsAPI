@@ -118,13 +118,13 @@ namespace CheckCarsAPI.Controllers
                     return Conflict("The Report Already Exists");
                 }
 
-                List<Photo> photosByReport = issueReport != null? issueReport.Photos.ToList(): new List<Photo>();
+                List<Photo> photosByReport = issueReport != null ? issueReport.Photos.ToList() : new List<Photo>();
                 _context.IssueReports.Add(issueReport);
                 await _context.SaveChangesAsync();
 
                 await SaveImagesAsync(imgFiles, issueReport.ReportId, photosByReport);
 
-                return Created("", issueReport);
+                return Created("", issueReport.ReportId);
             }
             catch (NullReferenceException e)
             {
@@ -195,15 +195,16 @@ namespace CheckCarsAPI.Controllers
                         photos.Add(photo);
                     }
                 }
-                
+
                 // Update the photos in the database
                 _context.Photos.UpdateRange(photos);
                 _context.SaveChanges();
             }
             catch (System.Exception e)
             {
+               
                 Console.WriteLine(e.Message);
-                //throw;
+               
             }
         }
 

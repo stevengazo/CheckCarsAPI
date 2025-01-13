@@ -10,12 +10,12 @@ using CheckCarsAPI.Data;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class CrashReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
@@ -27,7 +27,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/CrashReports
         [HttpGet]
-
+        [Authorize]
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetCrashReports()
         {
             return await _context.CrashReports.ToListAsync();
@@ -35,6 +35,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/CrashReports/5
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<CrashReport>> GetCrashReport(int id)
         {
             var crashReport = await _context.CrashReports.FindAsync(id);
@@ -50,6 +51,7 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/CrashReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutCrashReport(string id, CrashReport crashReport)
         {
             if (!id.Equals(crashReport.ReportId))
@@ -65,7 +67,7 @@ namespace CheckCarsAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CrashReportExists(id))
+                if (!await CrashReportExistsAsync(id))
                 {
                     return NotFound();
                 }
@@ -83,9 +85,12 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("json")]
         public async Task<ActionResult<CrashReport>> PostCrashReport(CrashReport crashReport)
         {
+            if (await CrashReportExistsAsync(crashReport.ReportId))
+            {
+                return Conflict("The Report Already Exists");
+            }
             _context.CrashReports.Add(crashReport);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetCrashReport", new { id = crashReport.ReportId }, crashReport);
         }
 
@@ -95,15 +100,20 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                var options = new JsonSerializerSettings()
+                
+                CrashReport? crash = JsonConvert.DeserializeObject<CrashReport>(formData[nameof(CrashReport)], new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                };
-                CrashReport crash = JsonConvert.DeserializeObject<CrashReport>(formData["crash"], options);
-
-                if (crash != null && CrashReportExists(crash.ReportId))
+                });
+                Console.WriteLine(crash);
+                if (crash == null)
                 {
-                    return BadRequest("The report already exists");
+                    return NotFound("Crash object is null");
+                }
+
+                if (await CrashReportExistsAsync(crash.ReportId))
+                {
+                    return Conflict("The Report Already Exists");
                 }
 
                 _context.CrashReports.Add(crash);
@@ -116,6 +126,11 @@ namespace CheckCarsAPI.Controllers
                 return Created("", crash);
 
             }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine(e.Message);
+                return BadRequest("The report is null");
+            }
             catch (System.Exception e)
             {
                 Console.WriteLine(e.Message);
@@ -126,6 +141,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/CrashReports/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteCrashReport(int id)
         {
             var crashReport = await _context.CrashReports.FindAsync(id);
@@ -142,7 +158,7 @@ namespace CheckCarsAPI.Controllers
 
         #region  Private Methods
 
-        private bool CrashReportExists(string id)
+        private async Task<bool> CrashReportExistsAsync(string id)
         {
             return _context.CrashReports.Any(e => e.ReportId.Equals(id));
         }
@@ -160,7 +176,7 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 /// Get the Path of The images folder
-                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "crash", reportId);
+                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "issues", reportId);
                 if (!Directory.Exists(imagesPath))
                 {
                     Directory.CreateDirectory(imagesPath);

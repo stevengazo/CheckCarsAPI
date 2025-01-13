@@ -9,12 +9,13 @@ using CheckCarsAPI.Models;
 using CheckCarsAPI.Data;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class IssueReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
@@ -33,7 +34,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/IssueReports/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<IssueReport>> GetIssueReport(int id)
+        public async Task<ActionResult<IssueReport>> GetIssueReport(string id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
 
@@ -48,6 +49,7 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/IssueReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutIssueReport(string id, IssueReport issueReport)
         {
             if (!id.Equals(issueReport.ReportId))
@@ -63,7 +65,7 @@ namespace CheckCarsAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!IssueReportExists(id))
+                if (!await IssueReportExists(id))
                 {
                     return NotFound();
                 }
@@ -81,21 +83,15 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("json")]
         public async Task<ActionResult<IssueReport>> PostIssueReport(IssueReport issueReport)
         {
-            try
+            if (await IssueReportExists(issueReport.ReportId))
             {
-                var exits = IssueReportExists(issueReport.ReportId);
-                if (exits)
-                {
-                    return BadRequest("The Report Already Exists");
-                }
+                return Conflict("The Report Already Exists");
+            }
+            else
+            {
                 _context.IssueReports.Add(issueReport);
                 await _context.SaveChangesAsync();
-                return CreatedAtAction("GetIssueReport", new { id = issueReport.ReportId }, issueReport);
-            }
-            catch (Exception e)
-            {
-
-                throw;
+                return Ok();
             }
         }
 
@@ -105,21 +101,31 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 var imgFiles = formData.Files.Where(f => f.Name.Contains("image")).ToList();
-                JsonSerializerSettings? opt = new JsonSerializerSettings()
+                var issue = JsonConvert.DeserializeObject<IssueReport>(
+                    formData[nameof(IssueReport)],
+                    new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    });
+                if (issue == null)
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                };
-                var issue = JsonConvert.DeserializeObject<IssueReport>(formData["issue"], opt);
-                if (issue == null && IssueReportExists(issue.ReportId))
-                {
-                    return BadRequest("The report already exists");
+                    return NotFound("The report is null");
                 }
-                List<Photo> photos = issue.Photos.ToList();
+                if (await IssueReportExists(issue.ReportId))
+                {
+                    return Conflict("The Report Already Exists");
+                }
 
+                List<Photo> photos = issue.Photos.ToList();
                 _context.IssueReports.Add(issue);
                 await _context.SaveChangesAsync();
                 SaveImagesAsync(imgFiles, issue.ReportId, photos);
+
                 return Created("", issue);
+            }
+            catch (NullReferenceException e)
+            {
+                return BadRequest("The report is null");
             }
             catch (Exception e)
             {
@@ -128,9 +134,9 @@ namespace CheckCarsAPI.Controllers
             }
         }
 
-
         // DELETE: api/IssueReports/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteIssueReport(int id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
@@ -145,7 +151,8 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        private bool IssueReportExists(string id)
+        #region  Private methods
+        private async Task<bool> IssueReportExists(string id)
         {
             return _context.IssueReports.Any(e => e.ReportId.Equals(id));
         }
@@ -197,6 +204,6 @@ namespace CheckCarsAPI.Controllers
             }
         }
 
-
+        #endregion
     }
 }

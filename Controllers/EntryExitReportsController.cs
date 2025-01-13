@@ -91,7 +91,7 @@ namespace CheckCarsAPI.Controllers
                 var exits = CheckEntryExitReport(entryExitReport.ReportId);
                 if (exits.Result)
                 {
-                    return BadRequest("The report already exists");
+                    return Conflict("The report already exists");
                 }
                 _context.EntryExitReports.Add(entryExitReport);
                 await _context.SaveChangesAsync();
@@ -109,18 +109,20 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                Console.WriteLine(formData[nameof(EntryExitReport)]);
                 var options = new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 };
                 // Obtener las imágenes y los datos del reporte desde el formulario
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[nameof(EntryExitReport)], options);
-                
+                Console.WriteLine(formData[nameof(EntryExitReport)]);
+                var type = nameof(EntryExitReport).Split('.').Last();   
+                Console.WriteLine(type);
+                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[type], options);
+
                 if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
                 {
-                    return BadRequest("The report already exists");
+                    return Conflict("The report already exists");
                 }
 
                 List<Photo> photos = entryExits.Photos.ToList();
@@ -130,7 +132,12 @@ namespace CheckCarsAPI.Controllers
 
                 await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
 
-                return Created( "", entryExits); 
+                return Created("", entryExits);
+            }
+            catch (NullReferenceException e)
+            {
+                Console.WriteLine(e.Message);
+                return BadRequest("The report is null");
             }
             catch (SqlException e)
             {
@@ -166,13 +173,11 @@ namespace CheckCarsAPI.Controllers
             {
                 throw new Exception("The car plate does not match the report");
             }
-
         }
         private async Task<bool> CheckEntryExitReport(string id)
         {
             return _context.EntryExitReports.Any(e => e.ReportId == id);
         }
-
         /// <summary>
         /// Saves a list of images asynchronously to a specified directory and updates the photo records in the database.
         /// </summary>

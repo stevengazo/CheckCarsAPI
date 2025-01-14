@@ -29,6 +29,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/IssueReports
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<IssueReport>>> GetIssueReports()
         {
             return await _context.IssueReports.ToListAsync();
@@ -36,6 +37,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/IssueReports/5
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<IssueReport>> GetIssueReport(string id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
@@ -93,6 +95,7 @@ namespace CheckCarsAPI.Controllers
             {
                 _context.IssueReports.Add(issueReport);
                 await _context.SaveChangesAsync();
+                await CheckCarDependency(issueReport);
                 return Ok();
             }
         }
@@ -121,7 +124,7 @@ namespace CheckCarsAPI.Controllers
                 List<Photo> photosByReport = issueReport != null ? issueReport.Photos.ToList() : new List<Photo>();
                 _context.IssueReports.Add(issueReport);
                 await _context.SaveChangesAsync();
-
+                await CheckCarDependency(issueReport);
                 await SaveImagesAsync(imgFiles, issueReport.ReportId, photosByReport);
 
                 return Created("", issueReport.ReportId);
@@ -156,6 +159,21 @@ namespace CheckCarsAPI.Controllers
 
         #endregion
         #region  Private methods
+        /// <summary>
+        /// Check if the report have some relation with the cars in the database. If exists, update the report with the CardId
+        /// </summary>
+        /// <param name="report">Report to check</param>
+        /// <returns> A task that represents the asynchronous operation.</returns>
+        private async Task CheckCarDependency(IssueReport report)
+        {
+            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+            if (HaveDepency)
+            {
+                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
+                _context.IssueReports.Update(report);
+                _context.SaveChanges();
+            }
+        }
         private async Task<bool> IssueReportExists(string id)
         {
             return _context.IssueReports.Any(e => e.ReportId.Equals(id));
@@ -202,9 +220,9 @@ namespace CheckCarsAPI.Controllers
             }
             catch (System.Exception e)
             {
-               
+
                 Console.WriteLine(e.Message);
-               
+
             }
         }
 

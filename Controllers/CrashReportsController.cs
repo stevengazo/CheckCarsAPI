@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
+using CheckCarsAPI.Services;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -20,12 +21,14 @@ namespace CheckCarsAPI.Controllers
     public class CrashReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
+        private readonly EmailService _emailService;
 
-        public CrashReportsController(ReportsDbContext context)
+        public CrashReportsController(ReportsDbContext context, EmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
-
+        #region  EndPoints
         // GET: api/CrashReports
         [HttpGet]
         [Authorize]
@@ -81,7 +84,7 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/CrashReports
+        // POST: api/CrashReports/json
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("json")]
         public async Task<ActionResult<CrashReport>> PostCrashReport(CrashReport crashReport)
@@ -92,11 +95,13 @@ namespace CheckCarsAPI.Controllers
             }
             _context.CrashReports.Add(crashReport);
             await _context.SaveChangesAsync();
+            //            _emailService.SendAlert($"Nuevo Reporte Accidente {crashReport.CarPlate}-{crashReport.Created.ToString("dd-mm-yy")}", $"Se ha generado un nuevo reporte de accidente con el vehiculo {crashReport.CarPlate}.Detalles{crashReport.CrashDetails}");
+            await CheckCarDependency(crashReport);
+
             return CreatedAtAction("GetCrashReport", new { id = crashReport.ReportId }, crashReport);
         }
-
-       [HttpPost("form")]
-
+        // POST: api/CrashReports/form
+        [HttpPost("form")]
         public async Task<ActionResult> PostCrashReportForm([FromForm] IFormCollection formData)
         {
             try
@@ -118,7 +123,8 @@ namespace CheckCarsAPI.Controllers
 
                 _context.CrashReports.Add(CrashReport);
                 await _context.SaveChangesAsync();
-
+                //_emailService.SendAlert($"Nuevo Reporte Accidente {crashReport.CarPlate}-{crashReport.Created.ToString("dd-mm-yy")}", $"Se ha generado un nuevo reporte de accidente con el vehiculo {crashReport.CarPlate}.Detalles{crashReport.CrashDetails}");
+                await CheckCarDependency(CrashReport);
                 await SaveImagesAsync(imgFiles, CrashReport.ReportId, photos);
 
                 return Created("", CrashReport.ReportId);
@@ -151,15 +157,23 @@ namespace CheckCarsAPI.Controllers
 
             return NoContent();
         }
-
+        #endregion
         #region  Private Methods
-
+        private async Task CheckCarDependency(CrashReport report)
+        {
+            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+            if (HaveDepency)
+            {
+                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
+                _context.CrashReports.Update(report);
+                _context.SaveChanges();
+            }
+        }
         private async Task<bool> CrashReportExistsAsync(string id)
         {
             return _context.CrashReports.Any(e => e.ReportId.Equals(id));
         }
-
-       private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
+        private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
         {
             try
             {
@@ -198,8 +212,6 @@ namespace CheckCarsAPI.Controllers
                 //throw;
             }
         }
-
-
         #endregion
     }
 }

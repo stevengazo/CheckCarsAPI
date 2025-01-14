@@ -46,6 +46,51 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(result);
         }
 
+        [HttpPost("check")]
+        public async Task<IActionResult> Check(string jwt)
+        {
+            if (string.IsNullOrEmpty(jwt))
+            {
+                return BadRequest(new { message = "Token is required." });
+            }
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+
+            try
+            {
+                tokenHandler.ValidateToken(jwt, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    ValidateLifetime = true // Esto valida que el token no esté expirado
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+
+                // Extraer información adicional del token si es necesario
+                var username = jwtToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value;
+
+                return Ok(new
+                {
+                    message = "Token is valid.",
+                    username = username
+                });
+            }
+            catch (SecurityTokenException ex)
+            {
+                return Unauthorized(new { message = "Invalid token.", error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "An error occurred.", error = ex.Message });
+            }
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -125,7 +170,7 @@ namespace CheckCarsAPI.Controllers
 
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 var token = new JwtSecurityToken(
-                    issuer: HttpContext.Request.Host.ToString(),
+                    issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
                     expires: DateTime.Now.AddHours(12),

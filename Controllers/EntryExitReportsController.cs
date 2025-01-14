@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Diagnostics;
 using Microsoft.Data.SqlClient;
 using NuGet.Protocol;
+using CheckCarsAPI.Services;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -22,12 +23,14 @@ namespace CheckCarsAPI.Controllers
     public class EntryExitReportsController : ControllerBase
     {
         private readonly ReportsDbContext _context;
+        private readonly EmailService _EmailService;
 
-        public EntryExitReportsController(ReportsDbContext context)
+        public EntryExitReportsController(ReportsDbContext context, EmailService email)
         {
             _context = context;
+            _EmailService= email;
         }
-
+        #region  EndPoints
         // GET: api/EntryExitReports
         [HttpGet]
         [Authorize]
@@ -79,9 +82,6 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-
-
-
         // POST: api/EntryExitReport
         [HttpPost("json")]
         public async Task<ActionResult> PostEntryExitReport(EntryExitReport entryExitReport)
@@ -114,7 +114,7 @@ namespace CheckCarsAPI.Controllers
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 };
                 var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                var ObjectType = nameof(EntryExitReport).Split('.').Last();   
+                var ObjectType = nameof(EntryExitReport).Split('.').Last();
                 var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[ObjectType], options);
 
                 if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
@@ -126,6 +126,7 @@ namespace CheckCarsAPI.Controllers
 
                 _context.EntryExitReports.Add(entryExits);
                 await _context.SaveChangesAsync();
+                await CheckCarDependency(entryExits);
 
                 await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
 
@@ -156,25 +157,31 @@ namespace CheckCarsAPI.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
+        #endregion
         #region  Private Methods
 
-        private async Task CheckCarPlate(string ReportId, string CarPlate)
+        /// <summary>
+        /// Checks if the car associated with the given report has a dependency in the database.
+        /// If a dependency is found, updates the report with the corresponding CarId and saves the changes.
+        /// </summary>
+        /// <param name="report">The entry/exit report to check for car dependency.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        private async Task CheckCarDependency(EntryExitReport report)
         {
-            var entryExitReport = await _context.EntryExitReports.FindAsync(ReportId);
-            if (entryExitReport == null)
+            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+            if (HaveDepency)
             {
-                throw new Exception("The report does not exist");
-            }
-            if (entryExitReport.CarPlate != CarPlate)
-            {
-                throw new Exception("The car plate does not match the report");
+                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
+                _context.EntryExitReports.Update(report);
+                _context.SaveChanges();
             }
         }
+
         private async Task<bool> CheckEntryExitReport(string id)
         {
             return _context.EntryExitReports.Any(e => e.ReportId == id);
         }
+
         /// <summary>
         /// Saves a list of images asynchronously to a specified directory and updates the photo records in the database.
         /// </summary>
@@ -222,7 +229,11 @@ namespace CheckCarsAPI.Controllers
                 //throw;
             }
         }
-
+        /// <summary>
+        /// Check if the report exists in the database.
+        /// </summary>
+        /// <param name="id">Id Report to check</param>
+        /// <returns>true if the report was founded</returns>
         private bool EntryExitReportExists(string id)
         {
             return _context.EntryExitReports.Any(e => e.ReportId.Equals(id));

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using CheckCarsAPI.Services;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -17,8 +18,8 @@ namespace CheckCarsAPI.Controllers
     public class CarServicesController : ControllerBase
     {
         private readonly ReportsDbContext _context;
-
-        public CarServicesController(ReportsDbContext context)
+    
+        public CarServicesController(ReportsDbContext context )
         {
             _context = context;
         }

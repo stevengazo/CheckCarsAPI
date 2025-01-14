@@ -25,7 +25,9 @@ namespace CheckCarsAPI.Controllers
         private readonly ReportsDbContext _context;
         private readonly EmailService _EmailService;
 
-        public EntryExitReportsController(ReportsDbContext context, EmailService email)
+        public EntryExitReportsController(
+            ReportsDbContext context, 
+            EmailService email)
         {
             _context = context;
             _EmailService= email;

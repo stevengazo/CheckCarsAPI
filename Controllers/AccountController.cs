@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using CheckCarsAPI.Services;
+using System.Runtime.CompilerServices;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -81,6 +82,13 @@ namespace CheckCarsAPI.Controllers
 
             return Ok(new { message = "Password reset link has been sent to your email." });
         }
+
+        [HttpGet("echo")]
+        public async Task<IActionResult> Echo()
+        {
+            return Ok();
+        }
+
         [HttpPost("Reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetClass reset)
         {

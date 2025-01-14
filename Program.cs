@@ -1,4 +1,5 @@
 using CheckCarsAPI.Data;
+using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 // Add Databases Context
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<ReportsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
-
+builder.Services.AddTransient<EmailService>();
 //
 builder.Services.AddCors(options =>
 {

@@ -32,18 +32,33 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/Photos/report/5
         [HttpGet("report/{id}")]
+
         public async Task<ActionResult<List<Photo>>> GetPhotosByReport(string id)
         {
-            var photo = await _context.Photos.Where(e=>e.ReportId  == id).ToListAsync();
+            // Obtén las fotos asociadas al informe
+            var photos = await _context.Photos.Where(e => e.ReportId == id).ToListAsync();
 
-            if (photo == null)
+            // Si no se encuentran fotos, retorna un NotFound
+            if (photos == null || !photos.Any())
             {
                 return NotFound();
             }
 
-            return photo;
+            // Obtener la URL base del servidor
+            var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}".TrimEnd('/');
+
+            // Modificar las URLs de las fotos para que incluyan la URL completa sin "app"
+            foreach (var photo in photos)
+            {
+                // Reemplazar "app" en la ruta y eliminar cualquier prefijo adicional
+                var filePath = photo.FilePath.Replace("/app", "").TrimStart('/');
+                photo.FilePath = $"{baseUrl}/{filePath}";
+            }
+
+            return photos;
         }
-      // GET: api/Photos/5
+
+        // GET: api/Photos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Photo>> GetPhoto(string id)
         {

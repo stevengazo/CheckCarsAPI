@@ -29,6 +29,59 @@ namespace CheckCarsAPI.Controllers
             _emailService = emailService;
         }
         #region  EndPoints
+
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<CrashReport>>> GetSearchCrashReport(
+             DateTime? date = null,
+            string plate = null,
+            int carId = 0,
+            string author = "")
+        {
+            try
+            {
+                // Validación básica de entrada
+                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                {
+                    return BadRequest("At least one search parameter must be provided.");
+                }
+                var query = _context.CrashReports.AsQueryable();
+                if (date != null)
+                {
+                    query = query.Where(e => e.Created.Date == date.Value.Date);
+                }
+
+                if (!string.IsNullOrEmpty(plate))
+                {
+                    query = query.Where(e => e.CarPlate == plate);
+                }
+                if (carId > 0)
+                {
+                    query = query.Where(e => e.CarId == carId);
+                }
+                if (!string.IsNullOrEmpty(author))
+                {
+                    query = query.Where(e => e.Author == author);
+                }
+
+                // Ordenar por fecha descendente y cargar relaciones
+                var data = await query
+                    .OrderByDescending(e => e.Created)
+                    .ToListAsync();
+
+                if (data == null || !data.Any())
+                {
+                    return NotFound("No matching records found.");
+                }
+
+                return Ok(data);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         // GET: api/CrashReports
         [HttpGet]
         [Authorize]
@@ -139,7 +192,6 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest($"Error processing the request: {e.InnerException?.Message}");
             }
         }
-
 
         // DELETE: api/CrashReports/5
         [HttpDelete("{id}")]

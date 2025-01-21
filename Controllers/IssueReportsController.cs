@@ -26,6 +26,61 @@ namespace CheckCarsAPI.Controllers
         {
             _context = context;
         }
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<IssueReport>>> GetSearchIssueReports(
+          DateTime? date = null,
+          string plate = null,
+          int carId = 0,
+          string author = "")
+        {
+            try
+            {
+                // Validación básica de entrada
+                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                {
+                    return BadRequest("At least one search parameter must be provided.");
+                }
+
+                // Consulta filtrada según los parámetros proporcionados
+                var query = _context.IssueReports.AsQueryable();
+                if (date != null)
+                {
+                    query = query.Where(e => e.Created.Date == date.Value.Date);
+                }
+
+                if (!string.IsNullOrEmpty(plate))
+                {
+                    query = query.Where(e => e.CarPlate == plate);
+                }
+                if (carId > 0)
+                {
+                    query = query.Where(e => e.CarId == carId);
+                }
+                if (!string.IsNullOrEmpty(author))
+                {
+                    query = query.Where(e => e.Author == author);
+                }
+
+                // Ordenar por fecha descendente y cargar relaciones
+                var data = await query
+                    .OrderByDescending(e => e.Created)
+                    .ToListAsync();
+
+                if (data == null || !data.Any())
+                {
+                    return NotFound("No matching records found.");
+                }
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                // Registrar errores si se utiliza algún servicio de registro
+                return BadRequest($"An error occurred while processing the request: {ex.Message}");
+            }
+        }
+
 
         // GET: api/IssueReports
         [HttpGet]
@@ -224,6 +279,10 @@ namespace CheckCarsAPI.Controllers
                 Console.WriteLine(e.Message);
 
             }
+        }
+
+        private async Task deleteFiles(string path){
+            
         }
 
         #endregion

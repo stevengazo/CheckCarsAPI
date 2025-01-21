@@ -32,7 +32,6 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/Photos/report/5
         [HttpGet("report/{id}")]
-
         public async Task<ActionResult<List<Photo>>> GetPhotosByReport(string id)
         {
             // Obtén las fotos asociadas al informe
@@ -47,16 +46,21 @@ namespace CheckCarsAPI.Controllers
             // Obtener la URL base del servidor
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}".TrimEnd('/');
 
-            // Modificar las URLs de las fotos para que incluyan la URL completa sin "app"
+            // Modificar las URLs de las fotos para que sean accesibles
             foreach (var photo in photos)
             {
-                // Reemplazar "app" en la ruta y eliminar cualquier prefijo adicional
-                var filePath = photo.FilePath.Replace("/app", "").TrimStart('/');
-                photo.FilePath = $"{baseUrl}/{filePath}";
+                // Aquí se asume que los archivos están siendo servidos desde "/images/"
+                // Ajusta según el "RequestPath" configurado en StaticFileOptions
+                var relativePath = photo.FilePath
+                    .Replace(@"C:\IIIS_WebSite\cars\images\", "") // Remueve la parte de la ruta local
+                    .Replace("\\", "/"); // Convierte backslashes a slashes para URLs
+
+                photo.FilePath = $"{baseUrl}/images/{relativePath}";
             }
 
             return photos;
         }
+
 
         // GET: api/Photos/5
         [HttpGet("{id}")]
@@ -123,7 +127,7 @@ namespace CheckCarsAPI.Controllers
             {
                 return NotFound();
             }
-
+            System.IO.File.Delete(photo.FilePath);
             _context.Photos.Remove(photo);
             await _context.SaveChangesAsync();
 

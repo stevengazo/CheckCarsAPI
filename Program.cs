@@ -9,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,12 +146,32 @@ if (!Directory.Exists(path))
 {
     Directory.CreateDirectory(path);
 }
+
+
+string imagesPath = builder.Configuration["StaticFiles:ImagesPath"];
+
+// Detectar el sistema operativo y ajustar la ruta si es necesario
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+    // Asegúrate de que las rutas estén en el formato correcto para Windows
+    imagesPath = imagesPath.Replace('/', '\\');
+}
+else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+{
+    imagesPath = Path.Combine(Directory.GetCurrentDirectory(),"images");
+    // Asegúrate de que las rutas estén en el formato correcto para Linux/Mac
+    imagesPath = imagesPath.Replace('\\', '/');
+}
+
+Directory.CreateDirectory(imagesPath);
+
 app.UseStaticFiles(
-    new StaticFileOptions{
-        FileProvider= new PhysicalFileProvider(path),
-        RequestPath="/images"
+    new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(imagesPath),
+        RequestPath = "/images"
     }
- );
+);
 
 app.UseCors("AnyOrigin");
 

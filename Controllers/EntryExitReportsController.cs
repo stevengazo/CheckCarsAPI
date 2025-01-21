@@ -26,20 +26,75 @@ namespace CheckCarsAPI.Controllers
         private readonly EmailService _EmailService;
 
         public EntryExitReportsController(
-            ReportsDbContext context, 
+            ReportsDbContext context,
             EmailService email)
         {
             _context = context;
-            _EmailService= email;
+            _EmailService = email;
         }
         #region  EndPoints
+        [HttpGet("search")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(
+            DateTime? date =null,
+            string plate = null,
+            int carId = 0,
+            string author = "")
+        {
+            try
+            {
+                // Validación básica de entrada
+                if ( date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                {
+                    return BadRequest("At least one search parameter must be provided.");
+                }
+
+                // Consulta filtrada según los parámetros proporcionados
+                var query = _context.EntryExitReports.AsQueryable();
+                if (date != null)
+                {
+                    query = query.Where(e => e.Created.Date == date.Value.Date);
+                }
+
+                if (!string.IsNullOrEmpty(plate))
+                {
+                    query = query.Where(e => e.CarPlate == plate);
+                }
+                if (carId > 0)
+                {
+                    query = query.Where(e => e.CarId == carId);
+                }
+                if (!string.IsNullOrEmpty(author))
+                {
+                    query = query.Where(e => e.Author == author);
+                }
+
+                // Ordenar por fecha descendente y cargar relaciones
+                var data = await query
+                    .OrderByDescending(e => e.Created)
+                    .ToListAsync();
+
+                if (data == null || !data.Any())
+                {
+                    return NotFound("No matching records found.");
+                }
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                // Registrar errores si se utiliza algún servicio de registro
+                return BadRequest($"An error occurred while processing the request: {ex.Message}");
+            }
+        }
+
         // GET: api/EntryExitReports
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetEntryExitReports()
         {
-            //  return await _context.EntryExitReports.ToListAsync();
-            return Ok(new string[] { "Value1", "Value2" });
+            return await _context.EntryExitReports.ToListAsync();
+            //  return Ok(new string[] { "Value1", "Value2" });
         }
 
         // GET: api/EntryExitReports/5
@@ -97,6 +152,7 @@ namespace CheckCarsAPI.Controllers
                 }
                 _context.EntryExitReports.Add(entryExitReport);
                 await _context.SaveChangesAsync();
+                await CheckCarDependency(entryExitReport);
                 return CreatedAtAction(nameof(GetEntryExitReport), new { id = entryExitReport.ReportId }, entryExitReport);
             }
             catch (SqlException e)
@@ -170,7 +226,7 @@ namespace CheckCarsAPI.Controllers
         /// <returns>A task that represents the asynchronous operation.</returns>
         private async Task CheckCarDependency(EntryExitReport report)
         {
-            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+            var HaveDepency = _context.Cars.Where(e => e.Plate.ToLower() == report.CarPlate.ToLower()).Any();
             if (HaveDepency)
             {
                 report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;

@@ -67,6 +67,7 @@ namespace CheckCarsAPI.Controllers
                 // Ordenar por fecha descendente y cargar relaciones
                 var data = await query
                     .OrderByDescending(e => e.Created)
+                    .Take(200)
                     .ToListAsync();
 
                 if (data == null || !data.Any())
@@ -87,7 +88,9 @@ namespace CheckCarsAPI.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetCrashReports()
         {
-            return await _context.CrashReports.ToListAsync();
+            return await _context.CrashReports
+                .Take(200)
+                .ToListAsync();
         }
 
         // GET: api/CrashReports/5

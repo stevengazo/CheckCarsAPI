@@ -89,6 +89,7 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetCrashReports()
         {
             return await _context.CrashReports
+                .OrderByDescending(e=>e.Created)
                 .Take(200)
                 .ToListAsync();
         }

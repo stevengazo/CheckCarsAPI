@@ -96,6 +96,7 @@ namespace CheckCarsAPI.Controllers
         {
             return await _context.EntryExitReports
                 .Take(200)
+                .OrderByDescending(e=>e.Created)
                 .ToListAsync();
         }
 

@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using CheckCarsAPI.Services;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -23,9 +24,9 @@ namespace CheckCarsAPI.Controllers
 
         public AccountController(
             UserManager<IdentityUser> userM,
-        SignInManager<IdentityUser> SignInM,
-        IConfiguration iconfig,
-        EmailService serviceemail
+            SignInManager<IdentityUser> SignInM,
+            IConfiguration iconfig,
+            EmailService serviceemail
             )
         {
             _emailService = serviceemail;

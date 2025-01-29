@@ -88,7 +88,7 @@ namespace CheckCarsAPI.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<IssueReport>>> GetIssueReports()
         {
-            return await _context.IssueReports.Take(200).ToListAsync();
+            return await _context.IssueReports.OrderByDescending(e => e.Created).Take(200).ToListAsync();
         }
 
         // GET: api/IssueReports/5

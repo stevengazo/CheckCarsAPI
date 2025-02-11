@@ -149,7 +149,7 @@ if (!Directory.Exists(path))
 
 
 string imagesPath = builder.Configuration["StaticFiles:ImagesPath"];
-
+/*
 // Detectar el sistema operativo y ajustar la ruta si es necesario
 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 {
@@ -157,11 +157,11 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     imagesPath = imagesPath.Replace('/', '\\');
 }
 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-{
+{*/
     imagesPath = Path.Combine(Directory.GetCurrentDirectory(),"images");
     // Asegúrate de que las rutas estén en el formato correcto para Linux/Mac
     imagesPath = imagesPath.Replace('\\', '/');
-}
+
 
 Directory.CreateDirectory(imagesPath);
 

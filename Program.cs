@@ -100,6 +100,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<ReminderService>(); // Servicio para verificar recordatorios
+builder.Services.AddHostedService<ReminderBackgroundService>(); // Servicio en segundo plano
+
+
 var app = builder.Build();
 
 #region Create Databases 

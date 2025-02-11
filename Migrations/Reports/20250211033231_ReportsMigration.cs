@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.Reports
 {
     /// <inheritdoc />
-    public partial class ReportInitial : Migration
+    public partial class ReportsMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,6 +35,23 @@ namespace CheckCarsAPI.Migrations.Reports
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Cars", x => x.CarId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "commentaries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AuthorId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReportId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_commentaries", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -161,10 +178,41 @@ namespace CheckCarsAPI.Migrations.Reports
                         principalColumn: "CarId");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Reminders",
+                columns: table => new
+                {
+                    ReminderId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReminderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AuthorId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CarId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Reminders", x => x.ReminderId);
+                    table.ForeignKey(
+                        name: "FK_Reminders_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_CarsService_CarId",
                 table: "CarsService",
                 column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_commentaries_ReportId",
+                table: "commentaries",
+                column: "ReportId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CrashReports_CarId",
@@ -185,6 +233,11 @@ namespace CheckCarsAPI.Migrations.Reports
                 name: "IX_Photos_ReportId",
                 table: "Photos",
                 column: "ReportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reminders_CarId",
+                table: "Reminders",
+                column: "CarId");
         }
 
         /// <inheritdoc />
@@ -192,6 +245,9 @@ namespace CheckCarsAPI.Migrations.Reports
         {
             migrationBuilder.DropTable(
                 name: "CarsService");
+
+            migrationBuilder.DropTable(
+                name: "commentaries");
 
             migrationBuilder.DropTable(
                 name: "CrashReports");
@@ -204,6 +260,9 @@ namespace CheckCarsAPI.Migrations.Reports
 
             migrationBuilder.DropTable(
                 name: "Photos");
+
+            migrationBuilder.DropTable(
+                name: "Reminders");
 
             migrationBuilder.DropTable(
                 name: "Cars");

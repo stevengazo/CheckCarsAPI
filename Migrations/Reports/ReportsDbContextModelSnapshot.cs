@@ -111,6 +111,40 @@ namespace CheckCarsAPI.Migrations.Reports
                     b.ToTable("CarsService");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.Commentary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReportId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId");
+
+                    b.ToTable("commentaries");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
                     b.Property<string>("PhotoId")
@@ -136,6 +170,50 @@ namespace CheckCarsAPI.Migrations.Reports
                     b.HasIndex("ReportId");
 
                     b.ToTable("Photos");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.Reminder", b =>
+                {
+                    b.Property<int>("ReminderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReminderId"));
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ReminderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ReminderId");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("Reminders");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Report", b =>
@@ -272,6 +350,17 @@ namespace CheckCarsAPI.Migrations.Reports
                     b.Navigation("Car");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.Commentary", b =>
+                {
+                    b.HasOne("CheckCarsAPI.Models.Report", "Report")
+                        .WithMany("Commentaries")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
                     b.HasOne("CheckCarsAPI.Models.Report", "Report")
@@ -281,6 +370,17 @@ namespace CheckCarsAPI.Migrations.Reports
                         .IsRequired();
 
                     b.Navigation("Report");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.Reminder", b =>
+                {
+                    b.HasOne("CheckCarsAPI.Models.Car", "Car")
+                        .WithMany("Reminders")
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.CrashReport", b =>
@@ -318,11 +418,15 @@ namespace CheckCarsAPI.Migrations.Reports
 
                     b.Navigation("IssueReports");
 
+                    b.Navigation("Reminders");
+
                     b.Navigation("Services");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Report", b =>
                 {
+                    b.Navigation("Commentaries");
+
                     b.Navigation("Photos");
                 });
 #pragma warning restore 612, 618

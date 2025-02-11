@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace CheckCarsAPI.Models
 {
-    public  abstract class Report
+    public abstract class Report
     {
         [Key]
- 
+
         public string ReportId { get; set; } = Guid.NewGuid().ToString();
         public string? Author { get; set; }
         public DateTime Created { get; set; }
@@ -19,8 +19,9 @@ namespace CheckCarsAPI.Models
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public ICollection<Photo>? Photos { get; set; } = new List<Photo>();
-        public int? CarId { get; set; }  
-        public Car? Car { get; set; } 
+        public ICollection<Commentary>? Commentaries { get; set; } = new List<Commentary>();
+        public int? CarId { get; set; }
+        public Car? Car { get; set; }
     }
 }
 

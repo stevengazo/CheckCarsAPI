@@ -12,6 +12,6 @@ public class Commentary
     public string Author { get; set; }
     public string AuthorId { get; set; }
     public string ReportId { get; set; }
-    public Report Report { get; set; }
+    public Report? Report { get; set; }
 
 }

@@ -9,6 +9,7 @@ using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using CheckCarsAPI.Services;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
+using System.Data.Common;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -22,27 +23,42 @@ namespace CheckCarsAPI.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IConfiguration _configuration;
 
+        private readonly ApplicationDbContext _dbContext;
+
         public AccountController(
             UserManager<IdentityUser> userM,
             SignInManager<IdentityUser> SignInM,
             IConfiguration iconfig,
-            EmailService serviceemail
+            EmailService serviceemail,
+            ApplicationDbContext applicationDb
             )
         {
             _emailService = serviceemail;
             _userManager = userM;
             _signInManager = SignInM;
             _configuration = iconfig;
+            _dbContext = applicationDb;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
+            int haveUsers = _dbContext.Users.Count();
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
-            if (result.Succeeded)
+        
+
+            if (result.Succeeded && haveUsers > 0)
             {
                 return Ok(new { result = "User created Successfully" });
+            }
+            if (result.Succeeded && haveUsers == 0)
+            {
+                var u = _dbContext.Users.FirstOrDefault();
+                u.EmailConfirmed = true;
+                _dbContext.Users.Update(u);
+                _dbContext.SaveChanges();
+                return Ok(new { result = "User created Successfully. First User" });
             }
             return BadRequest(result);
         }

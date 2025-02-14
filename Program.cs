@@ -45,6 +45,7 @@ builder.Services.AddCors(options =>
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
+        
         );
 });
 
@@ -212,10 +213,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseEndpoints(endp =>
-{
-    endp.MapHub<NotificationHub>("/notificationshub");
-});
-
+app.MapHub<NotificationHub>("/notificationhub");
 
 app.Run();

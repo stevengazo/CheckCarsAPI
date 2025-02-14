@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CheckCarsAPI.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
 public class ReminderController : ControllerBase
 {
     private readonly ReportsDbContext _reportsDbContext;
@@ -43,7 +46,7 @@ public class ReminderController : ControllerBase
         _reportsDbContext.Reminders.Add(reminder);
         await _reportsDbContext.SaveChangesAsync();
 
-        return CreatedAtAction("GetReminder", new { id = reminder.ReminderId}, reminder);
+        return CreatedAtAction("GetReminder", new { id = reminder.ReminderId }, reminder);
     }
 
     // PUT: api/reminders/5

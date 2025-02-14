@@ -17,5 +17,5 @@ public class Reminder
     public string Author { get; set; }
     public string AuthorId { get; set; }
     public int CarId { get; set; }
-    public Car Car { get; set; }
+    public Car? Car { get; set; }
 }

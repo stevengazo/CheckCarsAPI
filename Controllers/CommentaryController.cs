@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CheckCarsAPI.Controllers;
 
+[Route("api/[controller]")]
+[ApiController]
 public class CommentaryController : ControllerBase
 {
     private readonly ReportsDbContext dbContext;
@@ -37,6 +39,23 @@ public class CommentaryController : ControllerBase
 
         return commentary;
     }
+
+
+    // GET: api/Commentary/5
+    [HttpGet("/byreport/{id}")]
+    public async Task<ActionResult<List<Commentary>>> GetCommentaryByReport(string id)
+    {
+        var commentary = await dbContext.commentaries.Where(e => e.ReportId == id).ToListAsync();
+
+        if (commentary == null)
+        {
+            return NotFound();
+        }
+
+        return commentary;
+    }
+
+
 
     // POST: api/Commentary
     [HttpPost]

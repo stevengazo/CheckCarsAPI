@@ -11,6 +11,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.FileProviders;
+using CheckCarsAPI.Migrations.ApplicationDb;
+using CheckCarsAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,16 +21,23 @@ builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 // Add services to the container.
 
+#region  Identity
+
 // Add Identity Service
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
        .AddEntityFrameworkStores<ApplicationDbContext>()
        .AddDefaultTokenProviders();
 
-// Add Databases Context
+#endregion 
+
+#region  Data Bases
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<ReportsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
 builder.Services.AddTransient<EmailService>();
-//
+#endregion
+
+#region  CORS
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AnyOrigin",
@@ -39,6 +48,9 @@ builder.Services.AddCors(options =>
         );
 });
 
+#endregion
+
+#region  Swagger
 // Add Swagger services
 builder.Services.AddSwaggerGen(c =>
 {
@@ -100,10 +112,20 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+#endregion
+
+#region  Reminders
 
 builder.Services.AddScoped<ReminderService>(); // Servicio para verificar recordatorios
 builder.Services.AddHostedService<ReminderBackgroundService>(); // Servicio en segundo plano
 
+#endregion
+
+#region  Hubs
+
+builder.Services.AddSignalR();
+
+#endregion
 
 var app = builder.Build();
 
@@ -146,7 +168,7 @@ else
     app.UseSwaggerUI();
 }
 
-var path = Path.Combine(Directory.GetCurrentDirectory(),"images");
+var path = Path.Combine(Directory.GetCurrentDirectory(), "images");
 if (!Directory.Exists(path))
 {
     Directory.CreateDirectory(path);
@@ -163,12 +185,14 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 }
 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 {*/
-    imagesPath = Path.Combine(Directory.GetCurrentDirectory(),"images");
-    // Asegúrate de que las rutas estén en el formato correcto para Linux/Mac
-    imagesPath = imagesPath.Replace('\\', '/');
+imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
+// Asegúrate de que las rutas estén en el formato correcto para Linux/Mac
+imagesPath = imagesPath.Replace('\\', '/');
 
 
 Directory.CreateDirectory(imagesPath);
+
+#region  Static Files
 
 app.UseStaticFiles(
     new StaticFileOptions
@@ -178,6 +202,8 @@ app.UseStaticFiles(
     }
 );
 
+#endregion
+
 app.UseCors("AnyOrigin");
 
 app.UseAuthentication();  // Aseg�rate de llamar a UseAuthentication
@@ -185,5 +211,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseEndpoints(endp =>
+{
+    endp.MapHub<NotificationHub>("/notificationshub");
+});
+
 
 app.Run();

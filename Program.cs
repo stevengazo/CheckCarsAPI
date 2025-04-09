@@ -3,15 +3,11 @@ using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.FileProviders;
-using CheckCarsAPI.Migrations.ApplicationDb;
+//using CheckCarsAPI.Migrations.ApplicationDb;
 using CheckCarsAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +20,7 @@ builder.WebHost.UseUrls("http://0.0.0.0:8080");
 #region  Identity
 
 // Add Identity Service
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<CheckCarsAPI.Models.UserApp, IdentityRole>()
        .AddEntityFrameworkStores<ApplicationDbContext>()
        .AddDefaultTokenProviders();
 
@@ -45,7 +41,7 @@ builder.Services.AddCors(options =>
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
-        
+
         );
 });
 

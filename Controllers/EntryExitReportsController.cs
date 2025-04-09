@@ -183,7 +183,7 @@ namespace CheckCarsAPI.Controllers
                     return Conflict("The report already exists");
                 }
 
-                List<Photo> photos = entryExits.Photos.ToList();
+                List<Photo> photos = entryExits.Photos?.ToList() ?? new List<Photo>();
 
                 _context.EntryExitReports.Add(entryExits);
                 await _context.SaveChangesAsync();

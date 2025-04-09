@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using CheckCarsAPI.Data;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using CheckCarsAPI.Services;
-using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Authorization;
-using System.Data.Common;
+using CheckCarsAPI.Data;
+using CheckCarsAPI.Services;
+using CheckCarsAPI.Models;
 
 namespace CheckCarsAPI.Controllers
 {
@@ -18,15 +16,15 @@ namespace CheckCarsAPI.Controllers
     public class AccountController : ControllerBase
     {
         private readonly EmailService _emailService;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
+        private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
         private readonly IConfiguration _configuration;
 
         private readonly ApplicationDbContext _dbContext;
 
         public AccountController(
-            UserManager<IdentityUser> userM,
-            SignInManager<IdentityUser> SignInM,
+            UserManager<CheckCarsAPI.Models.UserApp> userM,
+            SignInManager<CheckCarsAPI.Models.UserApp> SignInM,
             IConfiguration iconfig,
             EmailService serviceemail,
             ApplicationDbContext applicationDb
@@ -43,7 +41,7 @@ namespace CheckCarsAPI.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             int haveUsers = _dbContext.Users.Count();
-            var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+            var user = new CheckCarsAPI.Models.UserApp { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
         
 
@@ -54,6 +52,10 @@ namespace CheckCarsAPI.Controllers
             if (result.Succeeded && haveUsers == 0)
             {
                 var u = _dbContext.Users.FirstOrDefault();
+                if (u == null)
+                {
+                    return BadRequest(new { result = "User not found" });
+                }
                 u.EmailConfirmed = true;
                 _dbContext.Users.Update(u);
                 _dbContext.SaveChanges();
@@ -71,7 +73,12 @@ namespace CheckCarsAPI.Controllers
             }
 
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
+            var jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+            {
+                throw new InvalidOperationException("JWT Key is not configured.");
+            }
+            var key = Encoding.UTF8.GetBytes(jwtKey);
 
             try
             {
@@ -173,16 +180,21 @@ namespace CheckCarsAPI.Controllers
         #region  Private Methods
 
 
-        private string GenerateJwtToken(IdentityUser user)
+        private string GenerateJwtToken(CheckCarsAPI.Models.UserApp user)
         {
             try
             {
                 var claims = new[]
            {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var jwtKey = _configuration["Jwt:Key"];
+                if (string.IsNullOrEmpty(jwtKey))
+                {
+                    throw new InvalidOperationException("JWT Key is not configured.");
+                }
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 var token = new JwtSecurityToken(
@@ -203,20 +215,20 @@ namespace CheckCarsAPI.Controllers
 
         public class ResetClass
         {
-            public string email { get; set; }
-            public string token { get; set; }
-            public string password { get; set; }
+            public string email { get; set; } = string.Empty;
+            public string token { get; set; } = string.Empty;
+            public string password { get; set; } = string.Empty;
         }
 
         public class RegisterModel
         {
-            public string Email { get; set; }
-            public string Password { get; set; }
+            public string Email { get; set; } = string.Empty;
+            public string Password { get; set; } = string.Empty;    
         }
         public class LoginModel
         {
-            public string Email { get; set; }
-            public string Password { get; set; }
+            public string Email { get; set; } = string.Empty;
+            public string Password { get; set; }= string.Empty;
         }
 
         #endregion

@@ -13,14 +13,12 @@ namespace CheckCarsAPI.Data
         public DbSet<CarService> CarsService { get; set; }
         public DbSet<Commentary> commentaries { get; set; }
         public DbSet<Reminder> Reminders {get;set;}
-
-
+        public DbSet<ReminderDest> ReminderDests {get;set;}
+        public DbSet<VehicleAttachment> VehicleAttachments { get; set; }    
+        
         public ReportsDbContext(DbContextOptions options) : base(options)
         {
         }
-
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Report>().UseTpcMappingStrategy();

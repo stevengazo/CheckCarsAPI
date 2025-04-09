@@ -17,7 +17,6 @@ namespace CheckCarsAPI.Controllers
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-
         private readonly EmailService _emailService;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;

@@ -122,6 +122,9 @@ builder.Services.AddHostedService<ReminderBackgroundService>(); // Servicio en s
 
 #endregion
 
+builder.Services.AddScoped<IFileService, FileService>();
+
+
 #region  Hubs
 
 builder.Services.AddSignalR();

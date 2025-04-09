@@ -1,3 +1,4 @@
+using CheckCarsAPI.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,12 @@ public class ReminderBackgroundService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<ReminderBackgroundService> _logger;
 
-    public ReminderBackgroundService(IServiceScopeFactory scopeFactory, ILogger<ReminderBackgroundService> logger)
+
+    public ReminderBackgroundService(
+        IServiceScopeFactory scopeFactory, 
+        ILogger<ReminderBackgroundService> logger
+        )
+
     {
         _scopeFactory = scopeFactory;
         _logger = logger;

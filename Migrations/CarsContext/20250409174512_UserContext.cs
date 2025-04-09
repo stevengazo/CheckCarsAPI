@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CheckCarsAPI.Migrations.CarsDb
+namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class ReportsContext : Migration
+    public partial class UserContext : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -190,6 +190,7 @@ namespace CheckCarsAPI.Migrations.CarsDb
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ReminderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    SendIt = table.Column<bool>(type: "bit", nullable: false),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false)
                 },

@@ -4,19 +4,16 @@ using CheckCarsAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace CheckCarsAPI.Migrations.CarsDb
+namespace CheckCarsAPI.Migrations.CarsContext
 {
     [DbContext(typeof(ReportsDbContext))]
-    [Migration("20250409161536_ReportsContext")]
-    partial class ReportsContext
+    partial class ReportsDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,6 +203,9 @@ namespace CheckCarsAPI.Migrations.CarsDb
 
                     b.Property<DateTime>("ReminderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("SendIt")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()

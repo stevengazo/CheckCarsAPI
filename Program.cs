@@ -41,7 +41,7 @@ builder.Services.AddCors(options =>
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader()
-
+        
         );
 });
 
@@ -105,7 +105,10 @@ builder.Services
         };
     });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -203,6 +206,9 @@ app.UseStaticFiles(
 );
 
 #endregion
+
+app.MapHub<ChatHub>("/chathub");
+
 
 app.UseCors("AnyOrigin");
 

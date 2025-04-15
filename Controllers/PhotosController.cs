@@ -61,7 +61,6 @@ namespace CheckCarsAPI.Controllers
             return photos;
         }
 
-
         // GET: api/Photos/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Photo>> GetPhoto(string id)

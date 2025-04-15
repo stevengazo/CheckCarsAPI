@@ -43,7 +43,7 @@ namespace CheckCarsAPI.Controllers
             int haveUsers = _dbContext.Users.Count();
             var user = new CheckCarsAPI.Models.UserApp { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
-        
+
 
             if (result.Succeeded && haveUsers > 0)
             {
@@ -64,40 +64,54 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(result);
         }
 
+        /// <summary>
+        /// Validates a JWT token and returns user-related information if valid.
+        /// </summary>
+        /// <param name="jwt">The JWT token to validate.</param>
+        /// <returns>Returns a success message with user info if the token is valid; otherwise, returns an error.</returns>
         [HttpPost("check")]
         public async Task<IActionResult> Check(string jwt)
         {
+            // Ensure the JWT token is provided in the request
             if (string.IsNullOrEmpty(jwt))
             {
                 return BadRequest(new { message = "Token is required." });
             }
 
+            // Initialize the JWT handler to process the token
             var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Retrieve the secret key used to validate the token signature
             var jwtKey = _configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(jwtKey))
             {
                 throw new InvalidOperationException("JWT Key is not configured.");
             }
+
+            // Convert the secret key string to a byte array
             var key = Encoding.UTF8.GetBytes(jwtKey);
 
             try
             {
+                // Validate the JWT token using the specified parameters
                 tokenHandler.ValidateToken(jwt, new TokenValidationParameters
                 {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true, // Ensure the signature is valid
+                    IssuerSigningKey = new SymmetricSecurityKey(key), // Use the configured key
+                    ValidateIssuer = true, // Validate the token's issuer
                     ValidIssuer = _configuration["Jwt:Issuer"],
-                    ValidateAudience = true,
+                    ValidateAudience = true, // Validate the token's audience
                     ValidAudience = _configuration["Jwt:Audience"],
-                    ValidateLifetime = true // Esto valida que el token no esté expirado
+                    ValidateLifetime = true // Ensure the token hasn't expired
                 }, out SecurityToken validatedToken);
 
+                // Cast the validated token to a JwtSecurityToken
                 var jwtToken = (JwtSecurityToken)validatedToken;
 
-                // Extraer información adicional del token si es necesario
+                // Extract the 'sub' (username) claim from the token
                 var username = jwtToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value;
 
+                // Return a success response with the username from the token
                 return Ok(new
                 {
                     message = "Token is valid.",
@@ -106,10 +120,12 @@ namespace CheckCarsAPI.Controllers
             }
             catch (SecurityTokenException ex)
             {
+                // Handle token validation failures (invalid signature, expired, etc.)
                 return Unauthorized(new { message = "Invalid token.", error = ex.Message });
             }
             catch (Exception ex)
             {
+                // Handle other unexpected errors
                 return BadRequest(new { message = "An error occurred.", error = ex.Message });
             }
         }
@@ -180,38 +196,63 @@ namespace CheckCarsAPI.Controllers
         #region  Private Methods
 
 
+        /// <summary>
+        /// Generates a JSON Web Token (JWT) for the specified user.
+        /// </summary>
+        /// <param name="user">The user for whom the token is being generated.</param>
+        /// <returns>A JWT token string.</returns>
         private string GenerateJwtToken(CheckCarsAPI.Models.UserApp user)
         {
             try
             {
-                var claims = new[]
-           {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-                var jwtKey = _configuration["Jwt:Key"];
+                // Define the claims to be included in the JWT.
+                // 'sub' (Subject) is usually the username or user ID.
+                // 'jti' (JWT ID) is a unique identifier for the token.
+                var claims = new Claim[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                // Retrieve the secret key used to sign the token from configuration settings.
+                string jwtKey = _configuration["Jwt:Key"];
+
+                // Ensure the key is present; if not, throw an exception.
                 if (string.IsNullOrEmpty(jwtKey))
                 {
                     throw new InvalidOperationException("JWT Key is not configured.");
                 }
+
+                // Create a symmetric security key from the secret key string.
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
+                // Generate signing credentials using the key and HMAC SHA-256 algorithm.
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                // Create the JWT token with issuer, audience, claims, expiry, and signing credentials.
                 var token = new JwtSecurityToken(
                     issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddHours(12),
+                    expires: DateTime.Now.AddHours(12), // Token is valid for 12 hours
                     signingCredentials: creds);
+
+                // Serialize the token to a string and return it.
                 return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (InvalidOperationException e)
+            {
+                // Handle issues related to invalid configuration (like missing JWT key).
+                Console.WriteLine("Check the Length of the key. " + e.Message);
+                throw;
             }
             catch (ArgumentOutOfRangeException r)
             {
-                Console.WriteLine("Verifique el tamaño de la llave. " + r.Message);
+                // Handle issues related to token creation limits or invalid parameters.
+                Console.WriteLine("Check the Length of the key. " + r.Message);
                 throw;
             }
         }
-
 
         public class ResetClass
         {
@@ -223,12 +264,12 @@ namespace CheckCarsAPI.Controllers
         public class RegisterModel
         {
             public string Email { get; set; } = string.Empty;
-            public string Password { get; set; } = string.Empty;    
+            public string Password { get; set; } = string.Empty;
         }
         public class LoginModel
         {
             public string Email { get; set; } = string.Empty;
-            public string Password { get; set; }= string.Empty;
+            public string Password { get; set; } = string.Empty;
         }
 
         #endregion

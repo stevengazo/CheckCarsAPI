@@ -17,8 +17,8 @@ public class ReminderService
     public ReminderService(
         ReportsDbContext context,
         EmailService emailService,
-        IHubContext<NotificationHub> hub
-        , ApplicationDbContext applicationDbContext
+        IHubContext<NotificationHub> hub,
+        ApplicationDbContext applicationDbContext
         )
     {
         _context = context;

@@ -10,10 +10,10 @@ namespace CheckCarsAPI.Models
         public string AttachmentId { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
 
         [Required]
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
 
         public string? Description { get; set; }
 
@@ -23,6 +23,6 @@ namespace CheckCarsAPI.Models
         public int CarId { get; set; }
 
         [ForeignKey("CarId")]
-        public Car Car { get; set; }
+        public Car? Car { get; set; }
     }
 }

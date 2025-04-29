@@ -12,11 +12,11 @@ public class Message
     public int ChatId { get; set; }
    
     [ForeignKey("Sender")]
-    public string SenderId { get; set; }
+    public string? SenderId { get; set; }
 
-    public string Content { get; set; }
+    public string? Content { get; set; }
     public DateTime SentAt { get; set; }
 
-    public Chat Chat { get; set; }
-    public UserApp Sender { get; set; } 
+    public Chat? Chat { get; set; }
+    public UserApp? Sender { get; set; } 
 }

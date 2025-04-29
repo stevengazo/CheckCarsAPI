@@ -12,13 +12,13 @@ namespace CheckCarsAPI.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string PhotoId { get; set; }
-        public string FileName { get; set; }
-        public string FilePath { get; set; }
+        public string? PhotoId { get; set; }
+        public string? FileName { get; set; }
+        public string? FilePath { get; set; }
         public DateTime DateTaken { get; set; }
         [ForeignKey("Report")]
-        public string ReportId { get; set; }
-        public Report Report { get; set; }
+        public string? ReportId { get; set; }
+        public Report? Report { get; set; }
 
     }
 }

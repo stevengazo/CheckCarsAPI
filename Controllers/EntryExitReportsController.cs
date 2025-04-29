@@ -36,15 +36,15 @@ namespace CheckCarsAPI.Controllers
         [HttpGet("search")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(
-            DateTime? date =null,
-            string plate = null,
+            DateTime? date = null,
+            string? plate = null,
             int carId = 0,
             string author = "")
         {
             try
             {
                 // Validación básica de entrada
-                if ( date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
                 {
                     return BadRequest("At least one search parameter must be provided.");
                 }
@@ -96,7 +96,7 @@ namespace CheckCarsAPI.Controllers
         {
             return await _context.EntryExitReports
                 .Take(200)
-                .OrderByDescending(e=>e.Created)
+                .OrderByDescending(e => e.Created)
                 .ToListAsync();
         }
 
@@ -170,28 +170,41 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                var options = new JsonSerializerSettings()
+                if (formData == null || formData.Count == 0)
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                };
-                var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
-                var ObjectType = nameof(EntryExitReport).Split('.').Last();
-                var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[ObjectType], options);
-
-                if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
-                {
-                    return Conflict("The report already exists");
+                    return BadRequest("Form data is null or empty.");
                 }
+                else
+                {
+                    var options = new JsonSerializerSettings()
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    };
+                    var imgFiles = formData.Files.Where(e => e.ContentType.Contains("image")).ToList();
+                    var ObjectType = nameof(EntryExitReport).Split('.').Last();
+                    var entryExits = JsonConvert.DeserializeObject<EntryExitReport>(formData[ObjectType], options);
 
-                List<Photo> photos = entryExits.Photos?.ToList() ?? new List<Photo>();
+                    if (entryExits != null && await CheckEntryExitReport(entryExits.ReportId))
+                    {
+                        return Conflict("The report already exists");
+                    }
 
-                _context.EntryExitReports.Add(entryExits);
-                await _context.SaveChangesAsync();
-                await CheckCarDependency(entryExits);
+                    if (entryExits == null)
+                    {
+                        throw new ArgumentNullException(nameof(entryExits), "EntryExits cannot be null.");
+                    }
 
-                await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
+                    entryExits.Photos ??= new List<Photo>();
+                    List<Photo> photos = entryExits.Photos.ToList();
 
-                return Created("", entryExits.ReportId);
+                    _context.EntryExitReports.Add(entryExits);
+                    await _context.SaveChangesAsync();
+                    await CheckCarDependency(entryExits);
+
+                    await SaveImagesAsync(imgFiles, entryExits.ReportId, photos);
+
+                    return Created("", entryExits.ReportId);
+                }
             }
             catch (NullReferenceException e)
             {
@@ -229,18 +242,31 @@ namespace CheckCarsAPI.Controllers
         /// <returns>A task that represents the asynchronous operation.</returns>
         private async Task CheckCarDependency(EntryExitReport report)
         {
-            var HaveDepency = _context.Cars.Where(e => e.Plate.ToLower() == report.CarPlate.ToLower()).Any();
-            if (HaveDepency)
+            if (report == null || string.IsNullOrEmpty(report.CarPlate))
             {
-                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
-                _context.EntryExitReports.Update(report);
-                _context.SaveChanges();
+                throw new ArgumentNullException(nameof(report), "Report or CarPlate cannot be null or empty.");
+            }
+            else
+            {
+                var haveDependency = await _context.Cars
+                    .AnyAsync(e => string.Equals(e.Plate, report.CarPlate, StringComparison.OrdinalIgnoreCase));
+                if (haveDependency)
+                {
+                    var car = await _context.Cars
+                        .FirstOrDefaultAsync(e => string.Equals(e.Plate, report.CarPlate, StringComparison.OrdinalIgnoreCase));
+                    if (car != null)
+                    {
+                        report.CarId = car.CarId;
+                        _context.EntryExitReports.Update(report);
+                        await _context.SaveChangesAsync();
+                    }
+                }
             }
         }
 
         private async Task<bool> CheckEntryExitReport(string id)
         {
-            return _context.EntryExitReports.Any(e => e.ReportId == id);
+            return await _context.EntryExitReports.AnyAsync(e => e.ReportId == id);
         }
 
         /// <summary>
@@ -250,13 +276,13 @@ namespace CheckCarsAPI.Controllers
         /// <param name="reportId">The report ID used to create a subdirectory for the images. Default is null.</param>
         /// <param name="photos">The list of photo objects to be updated with the file paths. Default is null.</param>
         /// <returns>A task that represents the asynchronous save operation.</returns>
-        /// <exception cref="System.Exception">Thrown when an error occurs during the save operation.</exception>
-        private async Task SaveImagesAsync(List<IFormFile> files, string reportId = null, List<Photo> photos = null)
+        /// <exception cref="Exception">Thrown when an error occurs during the save operation.</exception>
+        private async Task SaveImagesAsync(List<IFormFile> files, string? reportId = null, List<Photo>? photos = null)
         {
             try
             {
                 /// Get the Path of The images folder
-                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "entries", reportId);
+                var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images", "entries", reportId ?? throw new ArgumentNullException(nameof(reportId)));
                 if (!Directory.Exists(imagesPath))
                 {
                     Directory.CreateDirectory(imagesPath);
@@ -264,7 +290,11 @@ namespace CheckCarsAPI.Controllers
                 foreach (var file in files)
                 {
                     // Get the Photo with the same fileName and delete the photo from the list
-                    var photo = photos.FirstOrDefault(p => p.FileName == file.FileName);
+                    var photo = photos?.FirstOrDefault(p => p.FileName == file.FileName) ?? throw new ArgumentNullException(nameof(photos));
+                    if (photo is null)
+                    {
+                        throw new NullReferenceException($"The photo {file.FileName} does not exist in the list of photos.");
+                    }
                     photos.Remove(photo);
                     // Save the image to the file system and update the photo object
                     if (file.Length > 0)
@@ -280,16 +310,16 @@ namespace CheckCarsAPI.Controllers
                     }
                 }
                 // Update the photos in the database
-                _context.Photos.UpdateRange(photos);
+                _context.Photos.UpdateRange(photos ?? throw new ArgumentNullException(nameof(photos)));
                 await _context.SaveChangesAsync();
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-
                 Console.WriteLine(e.Message);
                 //throw;
             }
         }
+
         /// <summary>
         /// Check if the report exists in the database.
         /// </summary>

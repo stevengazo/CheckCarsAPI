@@ -6,8 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using CheckCarsAPI.Services;
 using CheckCarsAPI.Data;
-using CheckCarsAPI.Services;
-using CheckCarsAPI.Models;
+
 
 namespace CheckCarsAPI.Controllers
 {
@@ -112,10 +111,11 @@ namespace CheckCarsAPI.Controllers
                 var username = jwtToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value;
 
                 // Return a success response with the username from the token
+                await Task.CompletedTask;
                 return Ok(new
                 {
                     message = "Token is valid.",
-                    username = username
+                    username
                 });
             }
             catch (SecurityTokenException ex)
@@ -168,9 +168,9 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpGet("echo")]
-        public async Task<IActionResult> Echo()
+        public Task<IActionResult> Echo()
         {
-            return Ok();
+            return Task.FromResult<IActionResult>(Ok());
         }
 
         [HttpPost("Reset")]
@@ -215,7 +215,7 @@ namespace CheckCarsAPI.Controllers
                 };
 
                 // Retrieve the secret key used to sign the token from configuration settings.
-                string jwtKey = _configuration["Jwt:Key"];
+                string jwtKey = _configuration["Jwt:Key"] ?? string.Empty;
 
                 // Ensure the key is present; if not, throw an exception.
                 if (string.IsNullOrEmpty(jwtKey))

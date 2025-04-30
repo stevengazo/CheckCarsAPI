@@ -19,7 +19,7 @@ namespace CheckCarsAPI.Services
 
         public async Task<string> SaveFileAsync(IFormFile file, string folder)
         {
-            var uploadsFolderPath = Path.Combine(_env.WebRootPath, folder);
+            var uploadsFolderPath = Path.Combine( Directory.GetCurrentDirectory(), "images", folder);
 
             if (!Directory.Exists(uploadsFolderPath))
                 Directory.CreateDirectory(uploadsFolderPath);
@@ -29,7 +29,7 @@ namespace CheckCarsAPI.Services
 
             using var fileStream = new FileStream(filePath, FileMode.Create);
             await file.CopyToAsync(fileStream);
-
+            
             return Path.Combine(folder, fileName);
         }
 

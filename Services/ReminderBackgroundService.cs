@@ -33,7 +33,7 @@ public class ReminderBackgroundService : BackgroundService
             }
 
             _logger.LogInformation("Verificación de recordatorios ejecutada.");
-            await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken); // Verificar cada 10 minutos
+            await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Verificar cada 10 minutos
         }
     }
 }

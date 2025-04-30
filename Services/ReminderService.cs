@@ -31,10 +31,17 @@ public class ReminderService
     {
         var now = DateTime.UtcNow;
 
-        // Obtener recordatorios pendientes cuyo límite ha vencido y aún no han sido enviados
-        var reminders = await _context.Reminders.Include(e => e.ReminderDests)
-            .Where(r => r.ReminderDate <= now && !r.IsCompleted)
+        var startDate = now.Date.AddDays(-5);
+        var endDate = now.Date.AddDays(2);
+
+        var reminders = await _context.Reminders
+            .Include(e => e.Car)
+            .Include(e => e.ReminderDests)
+            .Where(r => r.ReminderDate.Date >= startDate
+                     && r.ReminderDate.Date <= endDate
+                     && !r.IsCompleted)
             .ToListAsync();
+
 
         // recorre los recordatorios
         foreach (var reminder in reminders)
@@ -44,11 +51,39 @@ public class ReminderService
             {
                 foreach (var dest in reminder.ReminderDests)
                 {
-                    // obtiene el usuario por su ID
                     var user = _applicationDbContext.Users.FirstOrDefault(e => e.Id == dest.UserId);
                     if (user != null)
                     {
-                        await _emailService.SendEmailAsync(user.Email, reminder.Title ?? "Recordatorio  - CheckCars", reminder.Description ?? "Tienes un recordatorio pendiente.");
+                        string subject = $"Recordatorio CheckCars - {reminder.Title ?? "Sin Titulo"}";
+                        string htmlMessage = $@"
+                                    <html>
+                                    <head>
+                                        <style>
+                                            body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+                                            .container {{ padding: 20px; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 8px; }}
+                                            .header {{ font-size: 20px; font-weight: bold; margin-bottom: 20px; }}
+                                            .content p {{ margin: 5px 0; }}
+                                            .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <div class='container'>
+                                            <div class='header'>🔔 Recordatorio pendiente - CheckCars</div>
+                                            <div class='content'>
+                                                <p><strong>Título:</strong> {reminder.Title ?? "Sin título"}</p>
+                                                <p><strong>Vehículo:</strong> {reminder.Car.Brand} {reminder.Car.Model} ({reminder.Car.Plate})</p>
+                                                <p><strong>Fecha:</strong> {reminder.ReminderDate:dd/MM/yyyy}</p>
+                                                <p><strong>Descripción:</strong></p>
+                                                <p>{reminder.Description ?? "Sin descripción."}</p>
+                                            </div>
+                                            <div class='footer'>
+                                                Gracias por usar CheckCars.
+                                            </div>
+                                        </div>
+                                    </body>
+                                    </html>";
+
+                        await _emailService.SendEmailAsync(user.Email, subject, htmlMessage);
                     }
                 }
             }

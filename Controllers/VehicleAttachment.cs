@@ -40,10 +40,11 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("upload/{carId}")]
         public async Task<IActionResult> UploadAttachment(int carId, IFormFile file)
         {
+            var carObj = await _context.Cars.FindAsync(carId);
             if (file == null || file.Length == 0)
                 return BadRequest("File not selected");
 
-            var filePath = await _fileService.SaveFileAsync(file, "vehicleAttachments");
+            var filePath = await _fileService.SaveFileAsync(file, carObj.Plate.ToString());
 
             var attachment = new VehicleAttachment
             {

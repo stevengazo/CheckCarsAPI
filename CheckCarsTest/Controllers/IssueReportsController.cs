@@ -129,18 +129,21 @@ public class IssueReportsControllerTests
         var context = GetDbContext();
         var controller = GetController(context);
 
+        var i = context.IssueReports.FirstOrDefault();
+
+
         var updated = new IssueReport
         {
-            ReportId = "issue1",
+            ReportId = i.ReportId,
             CarPlate = "MODIFIED",
             Author = "user1",
             Created = DateTime.UtcNow
         };
 
-        var result = await controller.PutIssueReport("issue1", updated);
+        var result = await controller.PutIssueReport(i.ReportId, updated);
 
         Assert.IsType<NoContentResult>(result);
-        Assert.Equal("MODIFIED", context.IssueReports.Find("issue1")?.CarPlate);
+        Assert.Equal("MODIFIED", context.IssueReports.Find(i.ReportId)?.CarPlate);
     }
 
     [Fact]
@@ -182,18 +185,25 @@ public class IssueReportsControllerTests
 
         Assert.IsType<NotFoundResult>(result);
     }
-
     [Fact]
     public async Task GetSearchIssueReports_ReturnsFilteredByPlate()
     {
+        // Arrange
         var context = GetDbContext();
+
+        var testReport = context.IssueReports.FirstOrDefault();
+       
         var controller = GetController(context);
 
-        var result = await controller.GetSearchIssueReports(plate: "ABC123");
+        // Act
+        var result = await controller.GetSearchIssueReports(plate: testReport.CarPlate);
 
-        var actionResult = Assert.IsType<ActionResult<IEnumerable<IssueReport>>>(result);
-        var filtered = Assert.IsAssignableFrom<IEnumerable<IssueReport>>(actionResult.Value);
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var filtered = Assert.IsAssignableFrom<IEnumerable<IssueReport>>(okResult.Value);
+
         Assert.Single(filtered);
-        Assert.Equal("ABC123", filtered.First().CarPlate);
+        Assert.Equal(testReport.CarPlate, filtered.First().CarPlate);
     }
+
 }

@@ -133,7 +133,11 @@ namespace CheckCarsAPI.Controllers
 
             var actionResult = Assert.IsType<ActionResult<string[]>>(result);
             var plates = Assert.IsType<string[]>(actionResult.Value);
-            Assert.Contains("Toyota-AAA123", plates);
+            // "Toyota-AAA123"
+            
+            var i = context.Cars.FirstOrDefault();
+            var plate = $"{i.Model}-{i.Plate}";
+            Assert.Contains(plate , plates);
         }
     }
 }

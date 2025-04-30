@@ -38,56 +38,63 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(
             DateTime? date = null,
             string? plate = null,
-            int carId = 0,
-            string author = "")
+            int? carId = null,
+            string? author = null)
         {
             try
             {
-                // Validación básica de entrada
-                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                // Validación básica: al menos un parámetro debe estar presente
+                if (date is null && string.IsNullOrWhiteSpace(plate) && carId is null && string.IsNullOrWhiteSpace(author))
                 {
-                    return BadRequest("At least one search parameter must be provided.");
+                    return BadRequest("Debe proporcionar al menos un parámetro de búsqueda.");
                 }
 
-                // Consulta filtrada según los parámetros proporcionados
                 var query = _context.EntryExitReports.AsQueryable();
-                if (date != null)
+
+                if (date.HasValue)
                 {
-                    query = query.Where(e => e.Created.Date == date.Value.Date);
+                    var targetDate = date.Value.Date;
+                    query = query.Where(e => e.Created.Date == targetDate);
                 }
 
-                if (!string.IsNullOrEmpty(plate))
+                if (!string.IsNullOrWhiteSpace(plate))
                 {
-                    query = query.Where(e => e.CarPlate == plate);
-                }
-                if (carId > 0)
-                {
-                    query = query.Where(e => e.CarId == carId);
-                }
-                if (!string.IsNullOrEmpty(author))
-                {
-                    query = query.Where(e => e.Author == author);
+                    query = query.Where(e => e.CarPlate.Contains(plate));
                 }
 
-                // Ordenar por fecha descendente y cargar relaciones
+                if (carId.HasValue)
+                {
+                    query = query.Where(e => e.CarId == carId.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(author))
+                {
+                    query = query.Where(e => e.Author.Contains(author) );
+                }
+                if(query.Count() == 0)
+                {
+                    return  NotFound("No se encontraron registros que coincidan con los criterios de búsqueda.");
+                }
+
                 var data = await query
                     .OrderByDescending(e => e.Created)
                     .Take(200)
                     .ToListAsync();
 
-                if (data == null || !data.Any())
+                if (!data.Any())
                 {
-                    return NotFound("No matching records found.");
+                    return NotFound("No se encontraron registros que coincidan con los criterios de búsqueda.");
                 }
 
                 return Ok(data);
             }
             catch (Exception ex)
             {
-                // Registrar errores si se utiliza algún servicio de registro
-                return BadRequest($"An error occurred while processing the request: {ex.Message}");
+                // Idealmente usar un logger en lugar de retornar el error detallado al cliente
+                return StatusCode(500, "Ocurrió un error al procesar la solicitud.");
             }
         }
+
 
         // GET: api/EntryExitReports
         [HttpGet]

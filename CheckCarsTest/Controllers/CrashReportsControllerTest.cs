@@ -187,15 +187,30 @@ public class CrashReportsControllerTests
     [Fact]
     public async Task GetSearchCrashReport_FiltersCorrectly()
     {
+        // Arrange
         var context = GetDbContext();
+
+        var testReport = new CrashReport
+        {
+            CarPlate = "CRASH123",
+            CrashDetails= "Crash test report",
+            Created = DateTime.UtcNow
+        };
+
+        context.CrashReports.Add(testReport);
+        context.SaveChanges();
+
         var controller = GetController(context);
 
-        var result = await controller.GetSearchCrashReport(
-            plate: "ABC123"
-        );
+        // Act
+        var result = await controller.GetSearchCrashReport(plate: "CRASH123");
 
-        var actionResult = Assert.IsType<ActionResult<IEnumerable<CrashReport>>>(result);
-        var reports = Assert.IsAssignableFrom<IEnumerable<CrashReport>>(actionResult.Value);
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var reports = Assert.IsAssignableFrom<IEnumerable<CrashReport>>(okResult.Value);
+
         Assert.Single(reports);
+        Assert.All(reports, x => Assert.Equal("CRASH123", x.CarPlate));
     }
+
 }

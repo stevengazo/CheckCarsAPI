@@ -45,13 +45,14 @@ public class CarServicesControllerTests
     public async Task GetCarService_ReturnsCorrectItem()
     {
         var context = GetDbContext();
+        var i = context.CarsService.FirstOrDefault();
         var controller = new CarServicesController(context);
 
-        var result = await controller.GetCarService(1);
+        var result = await controller.GetCarService(i.CarId);
 
         var actionResult = Assert.IsType<ActionResult<CarService>>(result);
         var returnValue = Assert.IsType<CarService>(actionResult.Value);
-        Assert.Equal(1, returnValue.CarServiceId);
+        Assert.Equal(i.CarServiceId, returnValue.CarServiceId);
     }
 
     [Fact]

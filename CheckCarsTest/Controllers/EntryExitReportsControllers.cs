@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 namespace CheckCarsAPI.Controllers;
 public class EntryExitReportsControllerTests
 {
@@ -192,12 +193,140 @@ public class EntryExitReportsControllerTests
     {
         var context = GetDbContext();
         var controller = GetController(context);
+        var i = context.EntryExitReports.FirstOrDefault();
 
-        var result = await controller.GetSearchExitReports(plate: context.EntryExitReports.First().CarPlate);
+        var result = await controller.GetSearchExitReports(plate: i.CarPlate);
 
         var actionResult = Assert.IsType<ActionResult<IEnumerable<EntryExitReport>>>(result);
         var filtered = Assert.IsAssignableFrom<IEnumerable<EntryExitReport>>(actionResult.Value);
         Assert.Single(filtered);
-        Assert.Equal("ABC123", filtered.First().CarPlate);
+        Assert.Equal(i.CarPlate, filtered.First().CarPlate);
     }
+    [Fact]
+    public async Task GetSearchExitReports_FiltersByDate()
+    {
+        var context = GetDbContext();
+        var controller = GetController(context);
+        var i = context.EntryExitReports.FirstOrDefault();
+
+        var result = await controller.GetSearchExitReports(date: i.Created.Date);
+
+        var actionResult = Assert.IsType<ActionResult<IEnumerable<EntryExitReport>>>(result);
+        var filtered = Assert.IsAssignableFrom<IEnumerable<EntryExitReport>>(actionResult.Value);
+        Assert.All(filtered, x => Assert.Equal(i.Created.Date, x.Created.Date));
+    }
+    [Fact]
+    public async Task GetSearchExitReports_FiltersByCarId()
+    {
+        // Arrange
+        var context = GetDbContext();
+
+        var testReport = new EntryExitReport
+        {
+            CarPlate = "XYZ123",
+            CarId = 123,
+            Author = "CarIdTester",
+            Created = DateTime.UtcNow
+        };
+        context.EntryExitReports.Add(testReport);
+        context.SaveChanges();
+
+        var controller = GetController(context);
+
+        // Act
+        var result = await controller.GetSearchExitReports(carId: testReport.CarId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var filtered = Assert.IsAssignableFrom<IEnumerable<EntryExitReport>>(okResult.Value);
+
+        Assert.NotEmpty(filtered);
+        Assert.All(filtered, x => Assert.Equal(testReport.CarId, x.CarId));
+    }
+    [Fact]
+    public async Task GetSearchExitReports_FiltersByAuthor()
+    {
+        // Arrange
+        var context = GetDbContext();
+
+        var testReport = new EntryExitReport
+        {
+            CarPlate = "AUTH123",
+            CarId = 555,
+            Author = "AuthorTest",
+            Created = DateTime.UtcNow
+        };
+
+        context.EntryExitReports.Add(testReport);
+        context.SaveChanges();
+
+        var controller = GetController(context);
+
+        // Act
+        var result = await controller.GetSearchExitReports(author: testReport.Author);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var filtered = Assert.IsAssignableFrom<IEnumerable<EntryExitReport>>(okResult.Value);
+
+        Assert.NotEmpty(filtered);
+        Assert.All(filtered, x => Assert.Equal(testReport.Author, x.Author));
+    }
+
+
+    [Fact]
+    public async Task GetSearchExitReports_FiltersByAllParameters()
+    {
+        // Arrange
+        var context = GetDbContext();
+
+        // Asegurarse de que haya datos conocidos
+        var testReport = new EntryExitReport
+        {
+            CarPlate = "TEST123",
+            CarId = 999,
+            Author = "JaneDoe",
+            Created = DateTime.UtcNow
+        };
+
+        context.EntryExitReports.Add(testReport);
+        context.SaveChanges();
+
+        var controller = GetController(context);
+
+        // Act
+        var result = await controller.GetSearchExitReports(
+            date: testReport.Created.Date,
+            plate: testReport.CarPlate,
+            carId: testReport.CarId,
+            author: testReport.Author);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var filtered = Assert.IsAssignableFrom<IEnumerable<EntryExitReport>>(okResult.Value);
+
+        Assert.NotEmpty(filtered);
+        Assert.All(filtered, x =>
+        {
+            Assert.Equal(testReport.CarPlate, x.CarPlate);
+            Assert.Equal(testReport.CarId, x.CarId);
+            Assert.Equal(testReport.Author, x.Author);
+            Assert.Equal(testReport.Created.Date, x.Created.Date);
+        });
+    }
+
+    [Fact]
+    public async Task GetSearchExitReports_ReturnsBadRequest_IfNoParams()
+    {
+        var context = GetDbContext();
+        var controller = GetController(context);
+
+        var result = await controller.GetSearchExitReports();
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result.Result);
+        Assert.Equal("Debe proporcionar al menos un parámetro de búsqueda.", badRequest.Value);
+    }
+
+
+
 }

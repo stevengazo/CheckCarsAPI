@@ -117,10 +117,9 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(issueReport).State = EntityState.Modified;
-
             try
             {
+                _context.IssueReports.Update(issueReport);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)

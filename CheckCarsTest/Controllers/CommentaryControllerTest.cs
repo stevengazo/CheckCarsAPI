@@ -41,7 +41,7 @@ public class CommentaryControllerTests
 
         var actionResult = Assert.IsType<ActionResult<IEnumerable<Commentary>>>(result);
         var returnValue = Assert.IsAssignableFrom<IEnumerable<Commentary>>(actionResult.Value);
-        Assert.Equal(2, returnValue.Count());
+        Assert.Equal(context.commentaries.Count(), returnValue.Count());
     }
 
     [Fact]
@@ -49,12 +49,12 @@ public class CommentaryControllerTests
     {
         var context = GetDbContext();
         var controller = new CommentaryController(context);
-
-        var result = await controller.GetCommentary(1);
+        var i = context.commentaries.FirstOrDefault();  
+        var result = await controller.GetCommentary(i.Id);
 
         var actionResult = Assert.IsType<ActionResult<Commentary>>(result);
         var returnValue = Assert.IsType<Commentary>(actionResult.Value);
-        Assert.Equal(1, returnValue.Id);
+        Assert.Equal(i.Id, returnValue.Id);
     }
 
     [Fact]

@@ -85,11 +85,16 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(photo).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                var local = _context.Photos.Local.FirstOrDefault(entry => entry.PhotoId == photo.PhotoId);
+                if (local != null)
+                {
+                    _context.Entry(local).State = EntityState.Detached;
+                }
+                _context.Photos.Update(photo);
+                _context.SaveChanges();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -119,14 +124,14 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/Photos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePhoto(int id)
+        public async Task<IActionResult> DeletePhoto(string id)
         {
-            var photo = await _context.Photos.FindAsync(id);
+            var photo = await _context.Photos.FirstOrDefaultAsync(e => e.PhotoId == id);
             if (photo == null)
             {
                 return NotFound();
             }
-            System.IO.File.Delete(photo.FilePath);
+
             _context.Photos.Remove(photo);
             await _context.SaveChangesAsync();
 

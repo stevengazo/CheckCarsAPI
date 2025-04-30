@@ -199,7 +199,7 @@ namespace CheckCarsAPI.Controllers
         // DELETE: api/IssueReports/5
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> DeleteIssueReport(int id)
+        public async Task<IActionResult> DeleteIssueReport(string id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
             if (issueReport == null)

@@ -103,7 +103,7 @@ namespace CheckCarsAPI.Controllers
         // GET: api/EntryExitReports/5
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<EntryExitReport>> GetEntryExitReport(int id)
+        public async Task<ActionResult<EntryExitReport>> GetEntryExitReport(string id)
         {
             var entryExitReport = await _context.EntryExitReports.FindAsync(id);
             if (entryExitReport == null)
@@ -220,7 +220,7 @@ namespace CheckCarsAPI.Controllers
         // DELETE: api/EntryExitReports/5
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> DeleteEntryExitReport(int id)
+        public async Task<IActionResult> DeleteEntryExitReport(string id)
         {
             var entryExitReport = await _context.EntryExitReports.FindAsync(id);
             if (entryExitReport == null)

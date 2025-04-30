@@ -1,6 +1,3 @@
-
-
-
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
 using Microsoft.AspNetCore.Mvc;

@@ -34,7 +34,7 @@ namespace CheckCarsAPI.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetSearchCrashReport(
              DateTime? date = null,
-            string plate = null,
+            string plate = "",
             int carId = 0,
             string author = "")
         {
@@ -97,7 +97,7 @@ namespace CheckCarsAPI.Controllers
         // GET: api/CrashReports/5
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<CrashReport>> GetCrashReport(int id)
+        public async Task<ActionResult<CrashReport>> GetCrashReport(string id)
         {
             var crashReport = await _context.CrashReports.FindAsync(id);
 
@@ -200,9 +200,9 @@ namespace CheckCarsAPI.Controllers
         // DELETE: api/CrashReports/5
         [HttpDelete("{id}")]
         [Authorize]
-        public async Task<IActionResult> DeleteCrashReport(int id)
+        public async Task<IActionResult> DeleteCrashReport(string id)
         {
-            var crashReport = await _context.CrashReports.FindAsync(id);
+            var crashReport = await _context.CrashReports.FirstAsync(e=>e.ReportId == id);
             if (crashReport == null)
             {
                 return NotFound();

@@ -1,4 +1,5 @@
 using CheckCarsAPI.Data;
+using CheckCarsAPI.Hubs;
 using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -7,53 +8,56 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-//using CheckCarsAPI.Migrations.ApplicationDb;
-using CheckCarsAPI.Hubs;
 
-Console.WriteLine("******** Startig CheckCars API..........");
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine("******** Starting CheckCars API ********");
+Console.ResetColor();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configura Kestrel para escuchar en todas las interfaces
+Console.WriteLine("[INFO] Configuring Kestrel and URLs...");
 builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
-// Add services to the container.
+#region Identity Configuration
 
-#region  Identity
-
-// Add Identity Service
+Console.WriteLine("[INFO] Adding Identity services...");
 builder.Services.AddIdentity<CheckCarsAPI.Models.UserApp, IdentityRole>()
-       .AddEntityFrameworkStores<ApplicationDbContext>()
-       .AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
-#endregion 
-
-#region  Data Bases
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityUsers")));
-builder.Services.AddDbContext<ReportsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
-builder.Services.AddTransient<EmailService>();
 #endregion
 
-#region  CORS
+#region Database Configuration
 
+Console.WriteLine("[INFO] Registering database contexts...");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityUsers")));
+builder.Services.AddDbContext<ReportsDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
+
+Console.WriteLine("[INFO] Registering email service...");
+builder.Services.AddTransient<EmailService>();
+
+#endregion
+
+#region CORS Policy
+
+Console.WriteLine("[INFO] Setting up CORS policy...");
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AnyOrigin",
-        builder => builder
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        
-        );
+    options.AddPolicy("AnyOrigin", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
 });
 
 #endregion
 
-#region  Swagger
-// Add Swagger services
+#region Swagger Configuration
+
+Console.WriteLine("[INFO] Configuring Swagger...");
 builder.Services.AddSwaggerGen(c =>
 {
-    // Configurar esquema de seguridad para JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -61,84 +65,84 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingrese  su token JWT. \nEjemplo: eyJhbGciOiJIUzI1NiIs..."
+        Description = "Enter your JWT token.\nExample: eyJhbGciOiJIUzI1NiIs..."
     });
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
-    // Para que Swagger muestre el soporte para archivos y datos JSON
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "API with File Upload",
         Version = "v1"
     });
-
 });
-// Authentication And JWT
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
 
-        };
-    });
+#endregion
 
+#region JWT Authentication
+
+Console.WriteLine("[INFO] Configuring JWT authentication...");
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+#endregion
+
+#region Controllers & JSON
+
+Console.WriteLine("[INFO] Configuring controllers and JSON...");
 builder.Services.AddControllers()
     .AddNewtonsoftJson(options =>
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-#endregion
-
-#region  Reminders
-
-builder.Services.AddScoped<ReminderService>(); // Servicio para verificar recordatorios
-builder.Services.AddHostedService<ReminderBackgroundService>(); // Servicio en segundo plano
 
 #endregion
 
+#region Custom Services
+
+Console.WriteLine("[INFO] Registering custom services...");
+builder.Services.AddScoped<ReminderService>();
+builder.Services.AddHostedService<ReminderBackgroundService>();
 builder.Services.AddScoped<IFileService, FileService>();
-
-
-#region  Hubs
-
 builder.Services.AddSignalR();
 
 #endregion
 
 var app = builder.Build();
 
-#region Create Databases
+#region Database Migration
 
 Console.BackgroundColor = ConsoleColor.DarkGreen;
 Console.WriteLine("=======================================");
-Console.WriteLine(" INICIANDO CREACIÓN DE BASES DE DATOS");
+Console.WriteLine(" STARTING DATABASE MIGRATION PROCESS");
 Console.WriteLine("=======================================\n");
 
 void MigrateDatabase<T>(string dbName) where T : DbContext
@@ -146,17 +150,17 @@ void MigrateDatabase<T>(string dbName) where T : DbContext
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<T>();
 
-    Console.WriteLine($"-- Migrando base de datos: {dbName}...");
+    Console.WriteLine($"-- Migrating database: {dbName}...");
 
     try
     {
         context.Database.Migrate();
-        Console.WriteLine($"--  {dbName} migrada correctamente.\n");
+        Console.WriteLine($"-- {dbName} migrated successfully.\n");
     }
     catch (Exception ex)
     {
         Console.BackgroundColor = ConsoleColor.Red;
-        Console.WriteLine($"-- Error al migrar {dbName}: {ex.Message}\n");
+        Console.WriteLine($"-- Error migrating {dbName}: {ex.Message}\n");
         Console.BackgroundColor = ConsoleColor.DarkGreen;
     }
 }
@@ -164,74 +168,54 @@ void MigrateDatabase<T>(string dbName) where T : DbContext
 MigrateDatabase<ReportsDbContext>("ReportsDbContext");
 MigrateDatabase<ApplicationDbContext>("ApplicationDbContext");
 
-Console.WriteLine("\n=======================================\n");
-
-Console.WriteLine(" Migraciones completadas.");
-
-Console.WriteLine("\n\n\n=======================================\n");
+Console.WriteLine("\n=======================================");
+Console.WriteLine(" Database migration completed.");
+Console.WriteLine("=======================================\n");
 Console.ResetColor();
-#endregion
-
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-var path = Path.Combine(Directory.GetCurrentDirectory(), "images");
-if (!Directory.Exists(path))
-{
-    Directory.CreateDirectory(path);
-}
-
-
-string imagesPath = builder.Configuration["StaticFiles:ImagesPath"];
-/*
-// Detectar el sistema operativo y ajustar la ruta si es necesario
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-{
-    // Asegúrate de que las rutas estén en el formato correcto para Windows
-    imagesPath = imagesPath.Replace('/', '\\');
-}
-else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-{*/
-imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
-// Asegúrate de que las rutas estén en el formato correcto para Linux/Mac
-imagesPath = imagesPath.Replace('\\', '/');
-
-
-Directory.CreateDirectory(imagesPath);
-
-#region  Static Files
-
-app.UseStaticFiles(
-    new StaticFileOptions
-    {
-        FileProvider = new PhysicalFileProvider(imagesPath),
-        RequestPath = "/images"
-    }
-);
 
 #endregion
 
-app.MapHub<ChatHub>("/chathub");
+#region Static Files
 
+Console.WriteLine("[INFO] Configuring static files...");
+var configuredPath = builder.Configuration["StaticFiles:ImagesPath"];
+var imagesPath = string.IsNullOrWhiteSpace(configuredPath)
+    ? Path.Combine(Directory.GetCurrentDirectory(), "images")
+    : Path.GetFullPath(configuredPath);
+
+imagesPath = imagesPath.Replace('\\', Path.DirectorySeparatorChar)
+                       .Replace('/', Path.DirectorySeparatorChar);
+
+if (!Directory.Exists(imagesPath))
+{
+    Console.WriteLine($"[INFO] Creating directory for images at: {imagesPath}");
+    Directory.CreateDirectory(imagesPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesPath),
+    RequestPath = "/images"
+});
+
+#endregion
+
+Console.WriteLine("[INFO] Starting middleware pipeline...");
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AnyOrigin");
-
-app.UseAuthentication();  // Aseg�rate de llamar a UseAuthentication
+app.UseAuthentication();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.MapHub<ChatHub>("/chathub");
 app.MapHub<NotificationHub>("/notificationhub");
+
+Console.ForegroundColor = ConsoleColor.Green;
+Console.WriteLine("\n✅ CheckCars API is running at http://0.0.0.0:8080");
+Console.ResetColor();
 
 app.Run();

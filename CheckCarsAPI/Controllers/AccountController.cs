@@ -161,8 +161,30 @@ namespace CheckCarsAPI.Controllers
                 new { token, email },
                 Request.Scheme);
 
+            var htmlContent = $@"
+<html>
+  <body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;'>
+    <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>
+      <h2 style='color: #2c3e50;'>Solicitud para restablecer contraseña</h2>
+      <p>Hola,</p>
+      <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>CheckCarsAPI</strong>.</p>
+      
+      <p><strong>Tu código para restablecer la contraseña es:</strong></p>
+      <div style='padding: 15px; background-color: #f0f0f0; border-radius: 6px; font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 1px;'>
+        {token}
+      </div>
+
+      <p>Este código es válido por los próximos <strong>15 minutos</strong>.</p>
+      <p>Si tú no solicitaste este cambio, puedes ignorar este mensaje con seguridad.</p>
+
+      <br />
+      <p style='color: #888;'>— El equipo de CheckCarsAPI</p>
+    </div>
+  </body>
+</html>";
+
             // Enviar el enlace por correo (implementa un servicio de correo aquí)
-            await _emailService.SendEmailAsync(email, "Password Reset CheckCarsAPI", $"Reset token password is: {token}");
+            await _emailService.SendEmailAsync(email, "🔐 Restablece tu contraseña - CheckCarsAPI", htmlContent);
 
             return Ok(new { message = "Password reset link has been sent to your email." });
         }

@@ -10,6 +10,8 @@ using System.Text;
 //using CheckCarsAPI.Migrations.ApplicationDb;
 using CheckCarsAPI.Hubs;
 
+Console.WriteLine("******** Startig CheckCars API..........");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configura Kestrel para escuchar en todas las interfaces
@@ -27,7 +29,7 @@ builder.Services.AddIdentity<CheckCarsAPI.Models.UserApp, IdentityRole>()
 #endregion 
 
 #region  Data Bases
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityUsers")));
 builder.Services.AddDbContext<ReportsDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ReportsConnection")));
 builder.Services.AddTransient<EmailService>();
 #endregion
@@ -132,32 +134,44 @@ builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-#region Create Databases 
-using (var scope = app.Services.CreateScope())
+#region Create Databases
+
+Console.BackgroundColor = ConsoleColor.DarkGreen;
+Console.WriteLine("=======================================");
+Console.WriteLine(" INICIANDO CREACIÓN DE BASES DE DATOS");
+Console.WriteLine("=======================================\n");
+
+void MigrateDatabase<T>(string dbName) where T : DbContext
 {
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<T>();
+
+    Console.WriteLine($"-- Migrando base de datos: {dbName}...");
+
     try
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ReportsDbContext>();
-        dbContext.Database.Migrate();  // Aplica las migraciones pendientes autom�ticamente
+        context.Database.Migrate();
+        Console.WriteLine($"--  {dbName} migrada correctamente.\n");
     }
-    catch (Exception r)
+    catch (Exception ex)
     {
-        Console.WriteLine(r.Message);
+        Console.BackgroundColor = ConsoleColor.Red;
+        Console.WriteLine($"-- Error al migrar {dbName}: {ex.Message}\n");
+        Console.BackgroundColor = ConsoleColor.DarkGreen;
     }
 }
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        dbContext.Database.Migrate();  // Aplica las migraciones pendientes autom�ticamente
-    }
-    catch (Exception r)
-    {
-        Console.WriteLine(r.Message);
-    }
-}
+
+MigrateDatabase<ReportsDbContext>("ReportsDbContext");
+MigrateDatabase<ApplicationDbContext>("ApplicationDbContext");
+
+Console.WriteLine("\n=======================================\n");
+
+Console.WriteLine(" Migraciones completadas.");
+
+Console.WriteLine("\n\n\n=======================================\n");
+Console.ResetColor();
 #endregion
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

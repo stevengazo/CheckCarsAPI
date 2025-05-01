@@ -12,6 +12,8 @@ using CheckCarsAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace CheckCarsAPI.Controllers
 {
     public class AccountControllerTests
@@ -21,6 +23,7 @@ namespace CheckCarsAPI.Controllers
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<EmailService> _emailServiceMock;
         private readonly ApplicationDbContext _dbContext;
+        private readonly Mock<ILogger<AccountController>> _loggerMock;
 
         private readonly AccountController _controller;
 
@@ -43,13 +46,15 @@ namespace CheckCarsAPI.Controllers
                 .UseInMemoryDatabase(databaseName: "TestDb")
                 .Options;
 
+            _loggerMock = new Mock<ILogger<AccountController>>();
+
             _dbContext = new ApplicationDbContext(options);
             _controller = new AccountController(
                 _userManagerMock.Object,
                 _signInManagerMock.Object,
                 _configurationMock.Object,
                 _emailServiceMock.Object,
-                _dbContext
+                _dbContext,_loggerMock.Object
             );
         }
 

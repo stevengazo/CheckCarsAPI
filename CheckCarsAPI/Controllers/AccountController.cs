@@ -74,6 +74,7 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("check")]
         public async Task<IActionResult> Check(string jwt)
         {
+            _logger.LogError("Check method request..");
             // Ensure the JWT token is provided in the request
             if (string.IsNullOrEmpty(jwt))
             {
@@ -147,7 +148,7 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
-            _logger.LogError("testing in db");
+
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {

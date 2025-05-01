@@ -34,32 +34,31 @@ namespace CheckCarsAPI.Controllers
         [HttpGet("report/{id}")]
         public async Task<ActionResult<List<Photo>>> GetPhotosByReport(string id)
         {
-            // Obtén las fotos asociadas al informe
             var photos = await _context.Photos.Where(e => e.ReportId == id).ToListAsync();
 
-            // Si no se encuentran fotos, retorna un NotFound
             if (photos == null || !photos.Any())
             {
                 return NotFound();
             }
 
-            // Obtener la URL base del servidor
+            var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}".TrimEnd('/');
 
-            // Modificar las URLs de las fotos para que sean accesibles
             foreach (var photo in photos)
             {
-                // Aquí se asume que los archivos están siendo servidos desde "/images/"
-                // Ajusta según el "RequestPath" configurado en StaticFileOptions
-                var relativePath = photo.FilePath
-                    .Replace(@"C:\IIIS_WebSite\cars\images\", "") // Remueve la parte de la ruta local
-                    .Replace("\\", "/"); // Convierte backslashes a slashes para URLs
+                // Asegura que obtienes una ruta relativa correcta multiplataforma
+                var relativePath = Path.GetRelativePath(imagesFolder, photo.FilePath);
 
-                photo.FilePath = $"{baseUrl}/images/{relativePath}";
+                // Normaliza separadores de directorio para web
+                var normalizedPath = relativePath.Replace(Path.DirectorySeparatorChar, '/').Replace("//", "/");
+
+                // Construye la URL final accesible
+                photo.FilePath = $"{baseUrl}/images/{normalizedPath}";
             }
 
             return photos;
         }
+
 
         // GET: api/Photos/5
         [HttpGet("{id}")]

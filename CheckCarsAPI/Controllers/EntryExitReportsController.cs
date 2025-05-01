@@ -253,23 +253,20 @@ namespace CheckCarsAPI.Controllers
             {
                 throw new ArgumentNullException(nameof(report), "Report or CarPlate cannot be null or empty.");
             }
-            else
+
+            string normalizedPlate = report.CarPlate.ToLower();
+
+            var car = await _context.Cars
+                .FirstOrDefaultAsync(e => e.Plate.ToLower() == normalizedPlate);
+
+            if (car != null)
             {
-                var haveDependency = await _context.Cars
-                    .AnyAsync(e => string.Equals(e.Plate, report.CarPlate, StringComparison.OrdinalIgnoreCase));
-                if (haveDependency)
-                {
-                    var car = await _context.Cars
-                        .FirstOrDefaultAsync(e => string.Equals(e.Plate, report.CarPlate, StringComparison.OrdinalIgnoreCase));
-                    if (car != null)
-                    {
-                        report.CarId = car.CarId;
-                        _context.EntryExitReports.Update(report);
-                        await _context.SaveChangesAsync();
-                    }
-                }
+                report.CarId = car.CarId;
+                _context.EntryExitReports.Update(report);
+                await _context.SaveChangesAsync();
             }
         }
+
 
         private async Task<bool> CheckEntryExitReport(string id)
         {

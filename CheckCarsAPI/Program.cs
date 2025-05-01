@@ -238,6 +238,11 @@ if (!Directory.Exists(imagesPath))
     Console.WriteLine($"[INFO] Creating directory for images at: {imagesPath}");
     Directory.CreateDirectory(imagesPath);
 }
+else 
+{
+    Console.WriteLine($"[INFO] exits folder for images at: {imagesPath}");
+
+}
 
 app.UseStaticFiles(new StaticFileOptions
 {

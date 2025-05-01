@@ -29,33 +29,36 @@ public class ReminderService
 
     public async Task CheckAndSendRemindersAsync()
     {
-        var now = DateTime.UtcNow;
-
-        var startDate = now.Date.AddDays(-5);
-        var endDate = now.Date.AddDays(2);
-
-        var reminders = await _context.Reminders
-            .Include(e => e.Car)
-            .Include(e => e.ReminderDests)
-            .Where(r => r.ReminderDate.Date >= startDate
-                     && r.ReminderDate.Date <= endDate
-                     && !r.IsCompleted)
-            .ToListAsync();
-
-
-        // recorre los recordatorios
-        foreach (var reminder in reminders)
+        try
         {
-            // si el recordatorio tiene destinatarios, envía el correo a cada uno de ellos
-            if (reminder.ReminderDests != null && reminder.ReminderDests.Count > 0)
+
+            var now = DateTime.UtcNow;
+
+            var startDate = now.Date.AddDays(-5);
+            var endDate = now.Date.AddDays(2);
+
+            var reminders = await _context.Reminders
+                .Include(e => e.Car)
+                .Include(e => e.ReminderDests)
+                .Where(r => r.ReminderDate.Date >= startDate
+                         && r.ReminderDate.Date <= endDate
+                         && !r.IsCompleted)
+                .ToListAsync();
+
+
+            // recorre los recordatorios
+            foreach (var reminder in reminders)
             {
-                foreach (var dest in reminder.ReminderDests)
+                // si el recordatorio tiene destinatarios, envía el correo a cada uno de ellos
+                if (reminder.ReminderDests != null && reminder.ReminderDests.Count > 0)
                 {
-                    var user = _applicationDbContext.Users.FirstOrDefault(e => e.Id == dest.UserId);
-                    if (user != null)
+                    foreach (var dest in reminder.ReminderDests)
                     {
-                        string subject = $"Recordatorio CheckCars - {reminder.Title ?? "Sin Titulo"}";
-                        string htmlMessage = $@"
+                        var user = _applicationDbContext.Users.FirstOrDefault(e => e.Id == dest.UserId);
+                        if (user != null)
+                        {
+                            string subject = $"Recordatorio CheckCars - {reminder.Title ?? "Sin Titulo"}";
+                            string htmlMessage = $@"
                                     <html>
                                     <head>
                                         <style>
@@ -83,23 +86,30 @@ public class ReminderService
                                     </body>
                                     </html>";
 
-                        await _emailService.SendEmailAsync(user.Email, subject, htmlMessage);
+                            await _emailService.SendEmailAsync(user.Email, subject, htmlMessage);
+                        }
                     }
                 }
+
+                var json = JsonConvert.SerializeObject(reminder, new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                });
+
+                await _hub.Clients.All.SendAsync("ReceiveNotifications", json);
+
+                // Marcar el recordatorio como enviado
+                reminder.SendIt = true;
+                _context.Reminders.Update(reminder);
             }
 
-            var json = JsonConvert.SerializeObject(reminder, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
-
-            await _hub.Clients.All.SendAsync("ReceiveNotifications", json);
-
-            // Marcar el recordatorio como enviado
-            reminder.SendIt = true;
-            _context.Reminders.Update(reminder);
+            await _context.SaveChangesAsync();
         }
-
-        await _context.SaveChangesAsync();
+        catch (Exception er)
+        {
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.WriteLine(er.Message);
+            Console.ResetColor();
+        }
     }
 }

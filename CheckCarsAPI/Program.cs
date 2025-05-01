@@ -7,13 +7,60 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog.Sinks.MSSqlServer;
+using Serilog;
+using System.Collections.ObjectModel;
+using System.Data;
 using System.Text;
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
+using System.Collections.ObjectModel;
+using System.Data;
+using static Serilog.Sinks.MSSqlServer.ColumnOptions;
+
 
 Console.ForegroundColor = ConsoleColor.Cyan;
 Console.WriteLine("******** Starting CheckCars API ********");
 Console.ResetColor();
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+#region Logger DB table
+try
+{
+    Console.WriteLine("[INFO] Configuring Logger");
+    var connectionString = builder.Configuration.GetConnectionString("ReportsConnection");
+
+    Log.Logger = new LoggerConfiguration()
+     .MinimumLevel.Debug() // 👈 Nivel general (lo más bajo que quieras ver en consola)
+     .Enrich.FromLogContext()
+     .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information) // 👈 consola muestra desde Info
+     .WriteTo.MSSqlServer(
+         connectionString: connectionString,
+         sinkOptions: new MSSqlServerSinkOptions
+         {
+             TableName = "Logs",
+             AutoCreateSqlTable = true
+         },
+         restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error // 👈 solo Error o peor en DB
+     )
+     .CreateLogger();
+
+
+    builder.Host.UseSerilog();
+}
+catch (Exception rf)
+{
+    Console.WriteLine(rf.Message);
+
+    
+}
+
+#endregion
 
 Console.WriteLine("[INFO] Configuring Kestrel and URLs...");
 builder.WebHost.UseUrls("http://0.0.0.0:8080");

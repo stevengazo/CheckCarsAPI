@@ -17,6 +17,7 @@ namespace CheckCarsAPI.Controllers
         private readonly EmailService _emailService;
         private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
         private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
+        private readonly ILogger<AccountController> _logger;
         private readonly IConfiguration _configuration;
 
         private readonly ApplicationDbContext _dbContext;
@@ -26,7 +27,8 @@ namespace CheckCarsAPI.Controllers
             SignInManager<CheckCarsAPI.Models.UserApp> SignInM,
             IConfiguration iconfig,
             EmailService serviceemail,
-            ApplicationDbContext applicationDb
+            ApplicationDbContext applicationDb,
+            ILogger<AccountController> logger
             )
         {
             _emailService = serviceemail;
@@ -34,6 +36,7 @@ namespace CheckCarsAPI.Controllers
             _signInManager = SignInM;
             _configuration = iconfig;
             _dbContext = applicationDb;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -144,6 +147,7 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
+            _logger.LogError("testing in db");
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
@@ -162,26 +166,26 @@ namespace CheckCarsAPI.Controllers
                 Request.Scheme);
 
             var htmlContent = $@"
-<html>
-  <body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;'>
-    <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>
-      <h2 style='color: #2c3e50;'>Solicitud para restablecer contraseña</h2>
-      <p>Hola,</p>
-      <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>CheckCarsAPI</strong>.</p>
+                <html>
+                  <body style='font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;'>
+                    <div style='max-width: 600px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>
+                      <h2 style='color: #2c3e50;'>Solicitud para restablecer contraseña</h2>
+                      <p>Hola,</p>
+                      <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>CheckCarsAPI</strong>.</p>
       
-      <p><strong>Tu código para restablecer la contraseña es:</strong></p>
-      <div style='padding: 15px; background-color: #f0f0f0; border-radius: 6px; font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 1px;'>
-        {token}
-      </div>
+                      <p><strong>Tu código para restablecer la contraseña es:</strong></p>
+                      <div style='padding: 15px; background-color: #f0f0f0; border-radius: 6px; font-size: 18px; font-weight: bold; text-align: center; letter-spacing: 1px;'>
+                        {token}
+                      </div>
 
-      <p>Este código es válido por los próximos <strong>15 minutos</strong>.</p>
-      <p>Si tú no solicitaste este cambio, puedes ignorar este mensaje con seguridad.</p>
+                      <p>Este código es válido por los próximos <strong>15 minutos</strong>.</p>
+                      <p>Si tú no solicitaste este cambio, puedes ignorar este mensaje con seguridad.</p>
 
-      <br />
-      <p style='color: #888;'>— El equipo de CheckCarsAPI</p>
-    </div>
-  </body>
-</html>";
+                      <br />
+                      <p style='color: #888;'>— El equipo de CheckCarsAPI</p>
+                    </div>
+                  </body>
+                </html>";
 
             // Enviar el enlace por correo (implementa un servicio de correo aquí)
             await _emailService.SendEmailAsync(email, "🔐 Restablece tu contraseña - CheckCarsAPI", htmlContent);

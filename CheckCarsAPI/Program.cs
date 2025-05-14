@@ -291,7 +291,7 @@ app.UseSwaggerUI();
 // Aplica la política solo en desarrollo
 if (app.Environment.IsDevelopment())
 {
-    app.UseHttpsRedirection();
+   // app.UseHttpsRedirection();
     app.UseCors("DevelopmentPolicy");
 }
 

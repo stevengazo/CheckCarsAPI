@@ -5,6 +5,7 @@ namespace CheckCarsAPI.Data
 {
     public class ReportsDbContext : DbContext
     {
+        public DbSet<Booking> Bookings { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
         public DbSet<EntryExitReport> EntryExitReports { get; set; }
         public DbSet<IssueReport> IssueReports { get; set; }
@@ -25,5 +26,6 @@ namespace CheckCarsAPI.Data
 
             base.OnModelCreating(modelBuilder);
         }
+        public DbSet<CheckCarsAPI.Models.Booking> Booking { get; set; } = default!;
     }
 }

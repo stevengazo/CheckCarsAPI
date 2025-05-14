@@ -34,7 +34,7 @@ public class CarServicesControllerTests
         var context = GetDbContext();
         var controller = new CarServicesController(context);
 
-        var result = await controller.GetCarsService();
+        var result = await controller.GetCarService(context.Cars.First().CarId);
 
         var actionResult = Assert.IsType<ActionResult<IEnumerable<CarService>>>(result);
         var returnValue = Assert.IsAssignableFrom<IEnumerable<CarService>>(actionResult.Value);

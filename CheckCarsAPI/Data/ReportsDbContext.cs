@@ -8,6 +8,7 @@ namespace CheckCarsAPI.Data
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<CrashReport> CrashReports { get; set; }
         public DbSet<EntryExitReport> EntryExitReports { get; set; }
+        public DbSet<VehicleReturn> VehicleReturns { get; set; }
         public DbSet<IssueReport> IssueReports { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<Car> Cars { get; set; }
@@ -15,8 +16,8 @@ namespace CheckCarsAPI.Data
         public DbSet<Commentary> commentaries { get; set; }
         public DbSet<Reminder> Reminders {get;set;}
         public DbSet<ReminderDest> ReminderDests {get;set;}
-        public DbSet<VehicleAttachment> VehicleAttachments { get; set; }    
-        
+        public DbSet<VehicleAttachment> VehicleAttachments { get; set; }
+
         public ReportsDbContext(DbContextOptions options) : base(options)
         {
         }
@@ -26,6 +27,6 @@ namespace CheckCarsAPI.Data
 
             base.OnModelCreating(modelBuilder);
         }
-        public DbSet<CheckCarsAPI.Models.Booking> Booking { get; set; } = default!;
+  
     }
 }

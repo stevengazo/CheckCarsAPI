@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     [DbContext(typeof(ReportsDbContext))]
-    [Migration("20250429212910_InitialCreation")]
-    partial class InitialCreation
+    [Migration("20250514170342_migracionv2")]
+    partial class migracionv2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,45 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("CheckCarsAPI.Models.Booking", b =>
+                {
+                    b.Property<int>("BookingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
+
+                    b.Property<int>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("BookingId");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("Bookings");
+                });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Car", b =>
                 {
@@ -101,11 +140,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NextMileage")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("mileage")
+                        .HasColumnType("int");
 
                     b.HasKey("CarServiceId");
 
@@ -374,6 +419,32 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.ToTable("IssueReports");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.VehicleReturn", b =>
+                {
+                    b.HasBaseType("CheckCarsAPI.Models.Report");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("mileage")
+                        .HasColumnType("bigint");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("VehicleReturns");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.Booking", b =>
+                {
+                    b.HasOne("CheckCarsAPI.Models.Car", "Car")
+                        .WithMany("Bookings")
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.CarService", b =>
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
@@ -463,8 +534,19 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Navigation("Car");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.VehicleReturn", b =>
+                {
+                    b.HasOne("CheckCarsAPI.Models.Car", "Car")
+                        .WithMany("VehicleReturns")
+                        .HasForeignKey("CarId");
+
+                    b.Navigation("Car");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.Car", b =>
                 {
+                    b.Navigation("Bookings");
+
                     b.Navigation("CrashReports");
 
                     b.Navigation("EntryExitReports");
@@ -476,6 +558,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Navigation("Services");
 
                     b.Navigation("VehicleAttachments");
+
+                    b.Navigation("VehicleReturns");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Reminder", b =>

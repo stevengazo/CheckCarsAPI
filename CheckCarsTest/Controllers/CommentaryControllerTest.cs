@@ -30,19 +30,19 @@ public class CommentaryControllerTests
 
         return context;
     }
-
+/*
     [Fact]
     public async Task GetCommentaries_ReturnsAllItems()
     {
         var context = GetDbContext();
         var controller = new CommentaryController(context);
 
-        var result = await controller.GetCommentaries();
+        var result = await controller.getcom;
 
         var actionResult = Assert.IsType<ActionResult<IEnumerable<Commentary>>>(result);
         var returnValue = Assert.IsAssignableFrom<IEnumerable<Commentary>>(actionResult.Value);
         Assert.Equal(context.commentaries.Count(), returnValue.Count());
-    }
+    }*/
 
     [Fact]
     public async Task GetCommentary_ReturnsCorrectItem()

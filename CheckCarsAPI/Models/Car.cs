@@ -24,6 +24,7 @@ namespace CheckCarsAPI.Models
         public ICollection<EntryExitReport>? EntryExitReports { get; set; }
         public ICollection<IssueReport>? IssueReports { get; set; }
         public ICollection<CrashReport>? CrashReports { get; set; }
+        public ICollection<VehicleReturn>? VehicleReturns { get; set; }
         public ICollection<Reminder>? Reminders { get; set; }
         public ICollection<VehicleAttachment>? VehicleAttachments { get; set; } 
         public ICollection<Booking>? Bookings { get; set; } = new List<Booking>();

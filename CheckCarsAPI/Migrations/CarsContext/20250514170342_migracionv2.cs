@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class InitialCreation : Migration
+    public partial class migracionv2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -71,6 +71,31 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 });
 
             migrationBuilder.CreateTable(
+                name: "Bookings",
+                columns: table => new
+                {
+                    BookingId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
+                    CarId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bookings", x => x.BookingId);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CarsService",
                 columns: table => new
                 {
@@ -80,6 +105,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    mileage = table.Column<int>(type: "int", nullable: false),
+                    NextMileage = table.Column<int>(type: "int", nullable: false),
                     CarId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -228,6 +255,30 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 });
 
             migrationBuilder.CreateTable(
+                name: "VehicleReturns",
+                columns: table => new
+                {
+                    ReportId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Author = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    CarId = table.Column<int>(type: "int", nullable: true),
+                    mileage = table.Column<long>(type: "bigint", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VehicleReturns", x => x.ReportId);
+                    table.ForeignKey(
+                        name: "FK_VehicleReturns_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "CarId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ReminderDests",
                 columns: table => new
                 {
@@ -246,6 +297,11 @@ namespace CheckCarsAPI.Migrations.CarsContext
                         principalColumn: "ReminderId",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_CarId",
+                table: "Bookings",
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CarsService_CarId",
@@ -291,11 +347,19 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 name: "IX_VehicleAttachments_CarId",
                 table: "VehicleAttachments",
                 column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VehicleReturns_CarId",
+                table: "VehicleReturns",
+                column: "CarId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Bookings");
+
             migrationBuilder.DropTable(
                 name: "CarsService");
 
@@ -319,6 +383,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
             migrationBuilder.DropTable(
                 name: "VehicleAttachments");
+
+            migrationBuilder.DropTable(
+                name: "VehicleReturns");
 
             migrationBuilder.DropTable(
                 name: "Reminders");

@@ -34,6 +34,7 @@
   <ItemGroup>
     <Folder Include="Data\" />
     <Folder Include="Migrations\ApplicationDb\" />
+    <Folder Include="Migrations\CarsContext\" />
   </ItemGroup>
 
 </Project>

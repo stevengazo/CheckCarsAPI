@@ -179,7 +179,7 @@ namespace CheckCarsAPI.Controllers
             {
                 if (formData == null || formData.Count == 0)
                 {
-                    return BadRequest("Form data is null or empty.");
+                    return BadRequest("Form Data is null or empty.");
                 }
                 else
                 {
@@ -239,6 +239,7 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
         #endregion
+
         #region  Private Methods
 
         /// <summary>
@@ -266,7 +267,6 @@ namespace CheckCarsAPI.Controllers
                 await _context.SaveChangesAsync();
             }
         }
-
 
         private async Task<bool> CheckEntryExitReport(string id)
         {

@@ -145,6 +145,7 @@ namespace CheckCarsAPI.Controllers
             }
             return Unauthorized();
         }
+        
         [HttpPost("forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
         {

@@ -41,7 +41,13 @@ namespace CheckCarsAPI.Controllers
             return Ok(users);
         }
 
-
+        [HttpGet("/api/GetUsersDic")]
+        public IActionResult GetUsersDic()
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            dic = _userManager.Users.ToDictionary(U => U.Id, U => U.UserName);
+            return Ok(dic); 
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(string id)
         {

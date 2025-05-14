@@ -27,6 +27,7 @@ Console.ResetColor();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).AddEnvironmentVariables();
 
 
 #region Logger DB table
@@ -241,23 +242,36 @@ Console.ResetColor();
 #region Static Files
 
 Console.WriteLine("[INFO] Configuring static files...");
-var configuredPath = builder.Configuration["StaticFiles:ImagesPath"];
-var imagesPath = string.IsNullOrWhiteSpace(configuredPath)
-    ? Path.Combine(Directory.GetCurrentDirectory(), "images")
-    : Path.GetFullPath(configuredPath);
 
-imagesPath = imagesPath.Replace('\\', Path.DirectorySeparatorChar)
-                       .Replace('/', Path.DirectorySeparatorChar);
+var configuredPath = builder.Configuration["StaticFiles:ImagesPath"];
+string imagesPath;
+
+// Si no se configura, usar ruta por defecto
+if (string.IsNullOrWhiteSpace(configuredPath))
+{
+    imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "images");
+}
+else
+{
+    // Si la ruta es relativa, combinar con el current dir
+    imagesPath = Path.IsPathRooted(configuredPath)
+        ? configuredPath
+        : Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), configuredPath));
+}
+
+// Normalizar separadores de ruta según sistema operativo
+imagesPath = Path.GetFullPath(imagesPath);
+
+Console.WriteLine($"[INFO] Static images path resolved to: {imagesPath}");
 
 if (!Directory.Exists(imagesPath))
 {
     Console.WriteLine($"[INFO] Creating directory for images at: {imagesPath}");
     Directory.CreateDirectory(imagesPath);
 }
-else 
+else
 {
-    Console.WriteLine($"[INFO] exits folder for images at: {imagesPath}");
-
+    Console.WriteLine($"[INFO] Directory already exists at: {imagesPath}");
 }
 
 app.UseStaticFiles(new StaticFileOptions
@@ -267,6 +281,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 #endregion
+
 
 Console.WriteLine("[INFO] Starting middleware pipeline...");
 

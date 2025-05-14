@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckCarsAPI", "CheckCarsAP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckCarsTest", "CheckCarsTest\CheckCarsTest.csproj", "{FCE46AD7-2001-43E9-A6D7-B5578BFDD85E}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{080608F3-8DF6-4FDA-BEAC-1EB9BB5E6E83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FCE46AD7-2001-43E9-A6D7-B5578BFDD85E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCE46AD7-2001-43E9-A6D7-B5578BFDD85E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCE46AD7-2001-43E9-A6D7-B5578BFDD85E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{080608F3-8DF6-4FDA-BEAC-1EB9BB5E6E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{080608F3-8DF6-4FDA-BEAC-1EB9BB5E6E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{080608F3-8DF6-4FDA-BEAC-1EB9BB5E6E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{080608F3-8DF6-4FDA-BEAC-1EB9BB5E6E83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

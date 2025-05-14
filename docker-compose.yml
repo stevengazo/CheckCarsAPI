@@ -1,28 +1,38 @@
 version: '3.8'
 
 services:
-  checkcars-api:
-    image: checkcars-api
+  checkcarsapi:
+    image: checkcarsapi
     build:
-      context: .
+      context: ./CheckCarsAPI/
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+      - "443:443"   # HTTPS
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - Smtp__Host=Smtp.gmail.com
+
+      # SMTP
+      - Smtp__Host=smtp.example.com
       - Smtp__Port=587
       - Smtp__EnableSsl=true
-      - Smtp__Username=${SMTP_USERNAME}
-      - Smtp__Password=${SMTP_PASSWORD}
-      - Smtp__From=steven.gazo@grupomecsa.net
-      - Smtp__DefaultEmail=steven.gazo@grupomecsa.net
-      - ConnectionStrings__IdentityUsers=${DB_USERS_CONN}
-      - ConnectionStrings__ReportsConnection=${DB_REPORTS_CONN}
-      - Jwt__Issuer=yourdomain.com
-      - Jwt__Audience=yourdomain.com
-      - Jwt__Key=${JWT_KEY}
+      - Smtp__Username=example.user@example.com
+      - Smtp__Password=example-password-123
+      - Smtp__From=example.user@example.com
+      - Smtp__DefaultEmail=example.user@example.com
+
+      # Connection strings
+      - ConnectionStrings__IdentityUsers=Data Source=sqlserver;Initial Catalog=ExampleDB_Users;User ID=sa;Password=ExamplePassword123!;TrustServerCertificate=True;
+      - ConnectionStrings__ReportsConnection=Data Source=sqlserver;Initial Catalog=ExampleDB;User ID=sa;Password=ExamplePassword123!;TrustServerCertificate=True;
+
+      # JWT
+      - Jwt__Issuer=example.com
+      - Jwt__Audience=example.com
+      - Jwt__Key=dGVzdC1rZXktZXhhbXBsZS1qcz0tZXhhbXBsZQ==
+
+      # Static files
       - StaticFiles__ImagesPath=images
+
     depends_on:
       - sqlserver
     volumes:
@@ -31,7 +41,12 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "TuPasswordSegura123!"
+      SA_PASSWORD: "ExamplePassword123!"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+volumes:
+  sql_data:

@@ -27,7 +27,7 @@ Console.ResetColor();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).AddEnvironmentVariables();
+//builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).AddEnvironmentVariables();
 
 
 #region Logger DB table
@@ -291,6 +291,7 @@ app.UseSwaggerUI();
 // Aplica la política solo en desarrollo
 if (app.Environment.IsDevelopment())
 {
+    app.UseHttpsRedirection();
     app.UseCors("DevelopmentPolicy");
 }
 

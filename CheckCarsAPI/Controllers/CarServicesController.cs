@@ -33,7 +33,7 @@ namespace CheckCarsAPI.Controllers
         */
 
         // GET: api/CarServices
-        [HttpGet("carservicebycar/{id}")]
+        [HttpGet("ByCar/{id}")]
         public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService(int id)
         {
             return await _context.CarsService

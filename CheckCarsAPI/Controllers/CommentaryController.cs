@@ -26,8 +26,8 @@ public class CommentaryController : ControllerBase
     */
 
     // GET: api/Commentary
-    [HttpGet("GetCommentariesByCar/{id}")]
-    public async Task<ActionResult<IEnumerable<Commentary>>> GetCommentariesByCar(string id)
+    [HttpGet("ByReport/{id}")]
+    public async Task<ActionResult<IEnumerable<Commentary>>> GetByReport(string id)
     {
         return await dbContext.commentaries
             .Include(e => e.Report)
@@ -49,23 +49,6 @@ public class CommentaryController : ControllerBase
 
         return commentary;
     }
-
-
-    // GET: api/Commentary/5
-    [HttpGet("/byreport/{id}")]
-    public async Task<ActionResult<List<Commentary>>> GetCommentaryByReport(string id)
-    {
-        var commentary = await dbContext.commentaries.Where(e => e.ReportId == id).ToListAsync();
-
-        if (commentary == null)
-        {
-            return NotFound();
-        }
-
-        return commentary;
-    }
-
-
 
     // POST: api/Commentary
     [HttpPost]

@@ -156,6 +156,19 @@ builder.Services.AddSwaggerGen(c =>
 
 #endregion
 
+#region Authorization Policies
+Console.WriteLine("[INFO] Configuring authorization policies...");
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Manager", policy => policy.RequireRole("Manager"));
+    options.AddPolicy("User", policy => policy.RequireRole("User"));
+    options.AddPolicy("Guest", policy => policy.RequireRole("Guest"));
+
+
+});
+#endregion
+
 #region JWT Authentication
 
 Console.WriteLine("[INFO] Configuring JWT authentication...");

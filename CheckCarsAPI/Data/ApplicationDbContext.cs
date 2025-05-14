@@ -42,6 +42,37 @@ namespace CheckCarsAPI.Data
                 .HasOne(m => m.Chat)
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ChatId);
+
+
+            List<IdentityRole> identityRole = new()
+            {
+                new IdentityRole
+                {
+                    Id = "100",
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new IdentityRole
+                {
+                    Id = "200",
+                    Name = "Manager",
+                    NormalizedName = "MANAGER"
+                },
+                new IdentityRole{
+                    Id = "300",
+                    Name = "User",
+                    NormalizedName = "USER"
+                },
+                new IdentityRole
+                {
+                    Id = "400",
+                    Name = "Guest",
+                    NormalizedName = "GUEST"
+                }
+            };
+
+            builder.Entity<IdentityRole>().HasData(identityRole);   
+
         }
     }
 }

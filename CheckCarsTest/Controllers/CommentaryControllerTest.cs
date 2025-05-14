@@ -73,13 +73,14 @@ public class CommentaryControllerTests
     {
         var context = GetDbContext();
         var controller = new CommentaryController(context);
+        var reportId = context.commentaries.FirstOrDefault().ReportId;
 
-        var result = await controller.GetCommentaryByReport("rep1");
+        var result = await controller.GetByReport(reportId);
 
         var actionResult = Assert.IsType<ActionResult<List<Commentary>>>(result);
         var returnValue = Assert.IsType<List<Commentary>>(actionResult.Value);
         Assert.Single(returnValue);
-        Assert.Equal("rep1", returnValue[0].ReportId);
+        Assert.Equal(reportId, returnValue[0].ReportId);
     }
 
     [Fact]

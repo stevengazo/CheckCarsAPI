@@ -33,6 +33,45 @@ namespace CheckCarsAPI.Controllers
             _EmailService = email;
         }
         #region  EndPoints
+        [HttpGet("ByCar/{id}")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetByCar(int carId = 0)
+        {    
+            try
+            {
+                var query = _context.EntryExitReports.AsQueryable();
+                if (carId == 0)    
+                {
+                return ValidationProblem("El id del coche no puede ser 0");
+                }
+                else
+                {
+                    query = query.Where(e => e.CarId == carId); 
+                }
+
+
+                if (query.Count() == 0)
+                {
+                    return NotFound("No se encontraron registros que coincidan con los criterios de búsqueda.");
+                }
+
+                var data = await query
+                    .OrderByDescending(e => e.Created)
+                    .Take(200)
+                    .ToListAsync();
+                if (!data.Any())
+                {
+                    return NotFound("No se encontraron registros que coincidan con los criterios de búsqueda.");
+                }
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                // Idealmente usar un logger en lugar de retornar el error detallado al cliente
+                return StatusCode(500, "Ocurrió un error al procesar la solicitud.");
+            }
+        }
+
         [HttpGet("search")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(

@@ -8,7 +8,7 @@ namespace CheckCarsAPI.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class UsersController : ControllerBase
     {
         #region Properties

@@ -6,6 +6,9 @@ using System.Security.Claims;
 using System.Text;
 using CheckCarsAPI.Services;
 using CheckCarsAPI.Data;
+using CheckCarsAPI.Models;
+using NuGet.Packaging;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace CheckCarsAPI.Controllers
@@ -18,8 +21,8 @@ namespace CheckCarsAPI.Controllers
         private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
         private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
         private readonly ILogger<AccountController> _logger;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
-
         private readonly ApplicationDbContext _dbContext;
 
         public AccountController(
@@ -28,7 +31,8 @@ namespace CheckCarsAPI.Controllers
             IConfiguration iconfig,
             EmailService serviceemail,
             ApplicationDbContext applicationDb,
-            ILogger<AccountController> logger
+            ILogger<AccountController> logger,
+            RoleManager<IdentityRole> roleM
             )
         {
             _emailService = serviceemail;
@@ -37,15 +41,16 @@ namespace CheckCarsAPI.Controllers
             _configuration = iconfig;
             _dbContext = applicationDb;
             _logger = logger;
+            _roleManager = roleM;
         }
 
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             int haveUsers = _dbContext.Users.Count();
             var user = new CheckCarsAPI.Models.UserApp { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
-
+            await AssignRol(user);
 
             if (result.Succeeded && haveUsers > 0)
             {
@@ -71,7 +76,7 @@ namespace CheckCarsAPI.Controllers
         /// </summary>
         /// <param name="jwt">The JWT token to validate.</param>
         /// <returns>Returns a success message with user info if the token is valid; otherwise, returns an error.</returns>
-        [HttpPost("check")]
+        [HttpPost("Check")]
         public async Task<IActionResult> Check(string jwt)
         {
             _logger.LogError("Check method request..");
@@ -134,7 +139,7 @@ namespace CheckCarsAPI.Controllers
             }
         }
 
-        [HttpPost("login")]
+        [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -146,7 +151,7 @@ namespace CheckCarsAPI.Controllers
             return Unauthorized();
         }
         
-        [HttpPost("forgot")]
+        [HttpPost("Forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
 
@@ -195,7 +200,7 @@ namespace CheckCarsAPI.Controllers
             return Ok(new { message = "Password reset link has been sent to your email." });
         }
 
-        [HttpGet("echo")]
+        [HttpGet("Echo")]
         public Task<IActionResult> Echo()
         {
             return Task.FromResult<IActionResult>(Ok());
@@ -221,8 +226,34 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(new { errors = result.Errors });
         }
 
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Verificar()
+        {
+            var nombre = User.Identity?.Name;
+            var autenticado = User.Identity?.IsAuthenticated;
+            var roles = string.Join(", ", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value));
+            return Content($"Usuario: {nombre}, Autenticado: {autenticado}, Roles: {roles}");
+        }
         #region  Private Methods
 
+
+        private async Task AssignRol(UserApp user)
+        {
+            var role = await _userManager.GetRolesAsync(user);
+            if (role.Count == 0)
+            {
+                if (_dbContext.Users.Count() == 1)
+                {
+                    await _userManager.AddToRoleAsync(user, "Admin");
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(user, "User");
+                }
+            }
+        }
 
         /// <summary>
         /// Generates a JSON Web Token (JWT) for the specified user.
@@ -233,54 +264,45 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                // Define the claims to be included in the JWT.
-                // 'sub' (Subject) is usually the username or user ID.
-                // 'jti' (JWT ID) is a unique identifier for the token.
-                var claims = new Claim[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                };
+                var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
 
-                // Retrieve the secret key used to sign the token from configuration settings.
+                var userRoles = _userManager.GetRolesAsync(user).Result;
+
+                foreach (var role in userRoles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
                 string jwtKey = _configuration["Jwt:Key"] ?? string.Empty;
 
-                // Ensure the key is present; if not, throw an exception.
                 if (string.IsNullOrEmpty(jwtKey))
                 {
                     throw new InvalidOperationException("JWT Key is not configured.");
                 }
 
-                // Create a symmetric security key from the secret key string.
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-
-                // Generate signing credentials using the key and HMAC SHA-256 algorithm.
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                // Create the JWT token with issuer, audience, claims, expiry, and signing credentials.
                 var token = new JwtSecurityToken(
                     issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddHours(12), // Token is valid for 12 hours
+                    expires: DateTime.Now.AddHours(12),
                     signingCredentials: creds);
 
-                // Serialize the token to a string and return it.
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }
-            catch (InvalidOperationException e)
+            catch (Exception ex)
             {
-                // Handle issues related to invalid configuration (like missing JWT key).
-                Console.WriteLine("Check the Length of the key. " + e.Message);
-                throw;
-            }
-            catch (ArgumentOutOfRangeException r)
-            {
-                // Handle issues related to token creation limits or invalid parameters.
-                Console.WriteLine("Check the Length of the key. " + r.Message);
+                Console.WriteLine("Token generation error: " + ex.Message);
                 throw;
             }
         }
+
 
         public class ResetClass
         {

@@ -26,6 +26,26 @@ namespace CheckCarsAPI.Controllers
             return await _context.VehicleAttachments.Include(v => v.Car).ToListAsync();
         }
 
+        [HttpGet("/attachmentsbyCar/{id}")]
+        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> AttachmentsByCar(int id)
+        {
+
+            var data = await _context.VehicleAttachments
+                            .Include(v => v.Car)
+                            .Where(e => e.CarId == id)
+                            .ToListAsync();
+
+
+            var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "images");
+            var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.PathBase}".TrimEnd('/');
+
+            foreach (var item in data)
+            {
+                item.FilePath = $"{baseUrl}/images/{item.FilePath}";
+            }
+            return data;
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<VehicleAttachment>> GetAttachment(string id)
         {

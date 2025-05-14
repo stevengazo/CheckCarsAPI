@@ -25,10 +25,21 @@ namespace CheckCarsAPI.Controllers
         }
 
         // GET: api/CarServices
-        [HttpGet()]
+        /*  [HttpGet()]
         public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService()
         {
             return await _context.CarsService.ToListAsync();
+        }
+        */
+
+        // GET: api/CarServices
+        [HttpGet("carservicebycar/{id}")]
+        public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService(int id)
+        {
+            return await _context.CarsService
+                .Include(e=> e.Car)
+                .Where(e => e.CarId == id)   
+                .ToListAsync();
         }
 
         // GET: api/CarServices/5

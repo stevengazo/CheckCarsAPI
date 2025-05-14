@@ -20,7 +20,7 @@ public class ReminderController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Reminder>>> GetReminders()
     {
-        return await _reportsDbContext.Reminders.ToListAsync();
+        return await _reportsDbContext.Reminders.Include(e=>e.ReminderDests).ToListAsync();
     }
 
     // GET: api/reminders/5
@@ -36,11 +36,34 @@ public class ReminderController : ControllerBase
 
         return reminder;
     }
+    // GET: api/remindersbycar/5
+    [HttpGet("remindersbycar/{id}")]
+    public async Task<ActionResult<List<Reminder>>> RemindersByCar(int id)
+    {
+        List<Reminder> Reminders= await _reportsDbContext.Reminders
+            .Include(e=>e.Car)
+            .Where( e=> e.CarId == id)
+            .OrderByDescending(E=>E.ReminderDate)
+            .ToListAsync();
+
+        if (Reminders == null)
+        {
+            return NotFound("Not found reminders with the Car Id: " + id.ToString());
+        }
+        return Reminders;
+    }
 
     // POST: api/reminders
     [HttpPost]
     public async Task<ActionResult<Reminder>> PostReminder(Reminder reminder)
     {
+        var car  = await _reportsDbContext.Cars.FirstOrDefaultAsync(e=> e.CarId == reminder.CarId);
+        if (car == null)
+        {
+            return NotFound("Car not found");
+        }
+        reminder.CarId = car.CarId;
+        reminder.Car = car; 
         _reportsDbContext.Reminders.Add(reminder);
         await _reportsDbContext.SaveChangesAsync();
 

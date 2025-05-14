@@ -1,4 +1,5 @@
-﻿using CheckCarsAPI.Services;
+﻿using CheckCarsAPI.Models;
+using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +13,14 @@ namespace CheckCarsAPI.Controllers
     {
         #region Properties
         private readonly EmailService _emailService;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<UserApp> _userManager;
+        private readonly SignInManager<UserApp> _signInManager;
         private readonly IConfiguration _configuration;
         #endregion
 
         public UsersController(
-            UserManager<IdentityUser> userM,
-            SignInManager<IdentityUser> SignInM,
+            UserManager<UserApp> userM,
+            SignInManager<UserApp> SignInM,
             IConfiguration iconfig,
             EmailService serviceemail
         )
@@ -56,7 +57,7 @@ namespace CheckCarsAPI.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] IdentityUser user)
+        public async Task<IActionResult> AddUser([FromBody] UserApp user)
         {
             if (user == null)
             {
@@ -74,7 +75,7 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(string id, [FromBody] IdentityUser updatedUser)
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UserApp updatedUser)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)

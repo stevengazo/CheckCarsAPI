@@ -17,11 +17,24 @@ public class CommentaryController : ControllerBase
     }
 
     // GET: api/Commentary
+    /*  
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Commentary>>> GetCommentaries()
     {
         return await dbContext.commentaries.ToListAsync();
     }
+    */
+
+    // GET: api/Commentary
+    [HttpGet("GetCommentariesByCar/{id}")]
+    public async Task<ActionResult<IEnumerable<Commentary>>> GetCommentariesByCar(string id)
+    {
+        return await dbContext.commentaries
+            .Include(e => e.Report)
+            .Where(e => e.ReportId == id)
+            .ToListAsync();
+    }
+
 
     // GET: api/Commentary/5
     [HttpGet("{id}")]

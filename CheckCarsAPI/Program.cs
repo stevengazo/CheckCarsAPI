@@ -90,6 +90,22 @@ builder.Services.AddTransient<EmailService>();
 #region CORS Policy
 
 Console.WriteLine("[INFO] Setting up CORS policy...");
+
+// Política de CORS para desarrollo
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("DevelopmentPolicy", policy =>
+        {
+            policy.WithOrigins("http://localhost:5173") // o cualquier otro origen en desarrollo
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Esto permite las cookies si es necesario
+        });
+    });
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AnyOrigin", policy =>
@@ -256,6 +272,12 @@ Console.WriteLine("[INFO] Starting middleware pipeline...");
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Aplica la política solo en desarrollo
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentPolicy");
+}
 
 app.UseCors("AnyOrigin");
 app.UseAuthentication();

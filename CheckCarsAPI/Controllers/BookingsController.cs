@@ -7,28 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Manager,User")]
     public class BookingsController : ControllerBase
     {
+        #region Properties
         private readonly ReportsDbContext _context;
+        #endregion
 
+        #region Constructor
         public BookingsController(ReportsDbContext context)
         {
             _context = context;
         }
+        #endregion
 
-        // GET: api/Bookings
+        #region Methods
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Booking>>> GetBookings()
         {
             return await _context.Bookings.ToListAsync();
         }
 
-        // GET: api/Bookings/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Booking>> GetBooking(int id)
         {
@@ -100,9 +106,13 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
+        #endregion
+
+        #region private methods
         private bool BookingExists(int id)
         {
             return _context.Bookings.Any(e => e.BookingId == id);
         }
+        #endregion
     }
 }

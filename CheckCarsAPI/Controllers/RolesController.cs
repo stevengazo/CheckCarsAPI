@@ -1,4 +1,5 @@
 ﻿using CheckCarsAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,12 +7,18 @@ namespace CheckCarsAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class RolesController : ControllerBase
     {
+        #region Private Fields
+
         private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
         private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
+        #endregion
+
+        #region Constructors
 
         public RolesController
             (
@@ -25,6 +32,9 @@ namespace CheckCarsAPI.Controllers
             _signInManager = SignInM;
         }
 
+        #endregion
+
+        #region endpoints
         [HttpGet("GetRoles")]
         public IActionResult GetRoles()
         {
@@ -80,6 +90,7 @@ namespace CheckCarsAPI.Controllers
             }
         }
         [HttpDelete()]
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult DeleteRoles(SetUserRole userRole)
         {
             try
@@ -109,13 +120,12 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-
+        #endregion
+   
     }
 
 
-   public class SetUserRole
+    public class SetUserRole
     {
         public string UserId { get; set; }
         public string RoleId { get; set; }

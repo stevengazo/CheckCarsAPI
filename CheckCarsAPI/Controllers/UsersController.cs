@@ -17,7 +17,8 @@ namespace CheckCarsAPI.Controllers
         private readonly SignInManager<UserApp> _signInManager;
         private readonly IConfiguration _configuration;
         #endregion
-
+   
+        #region Constructor
         public UsersController(
             UserManager<UserApp> userM,
             SignInManager<UserApp> SignInM,
@@ -30,6 +31,8 @@ namespace CheckCarsAPI.Controllers
             _signInManager = SignInM;
             _configuration = iconfig;
         }
+
+        #endregion
 
         #region Endpoints
 
@@ -48,6 +51,7 @@ namespace CheckCarsAPI.Controllers
             dic = _userManager.Users.ToDictionary(U => U.Id, U => U.UserName);
             return Ok(dic); 
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(string id)
         {
@@ -59,8 +63,6 @@ namespace CheckCarsAPI.Controllers
             user.PasswordHash = string.Empty;
             return Ok(user);
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> AddUser([FromBody] UserApp user)
@@ -105,6 +107,7 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

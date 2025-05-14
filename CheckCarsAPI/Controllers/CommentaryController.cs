@@ -1,5 +1,6 @@
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,15 +8,22 @@ namespace CheckCarsAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Roles = "Admin,Manager,User,Guest")]
 public class CommentaryController : ControllerBase
 {
+    #region Properties
     private readonly ReportsDbContext dbContext;
 
+    #endregion
+
+    #region Constructor
     public CommentaryController(ReportsDbContext context)
     {
         dbContext = context;
     }
+    #endregion
 
+    #region Endpoints
     // GET: api/Commentary
     /*  
     [HttpGet]
@@ -92,6 +100,7 @@ public class CommentaryController : ControllerBase
 
     // DELETE: api/Commentary/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> DeleteCommentary(int id)
     {
         var commentary = await dbContext.commentaries.FindAsync(id);
@@ -106,8 +115,12 @@ public class CommentaryController : ControllerBase
         return NoContent();
     }
 
+    #endregion
+
+    #region Private Methods
     private bool CommentaryExists(int id)
     {
         return dbContext.commentaries.Any(e => e.Id == id);
     }
+    #endregion
 }

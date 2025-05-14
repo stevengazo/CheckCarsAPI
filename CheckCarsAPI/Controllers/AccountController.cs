@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,16 +8,20 @@ using System.Text;
 using CheckCarsAPI.Services;
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
-using NuGet.Packaging;
-using Microsoft.AspNetCore.Authorization;
+
 
 
 namespace CheckCarsAPI.Controllers
 {
+    /// <summary>
+    /// Account Controller handles user registration, login, password reset, and JWT token validation.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
+        #region Private Fields
+     
         private readonly EmailService _emailService;
         private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
         private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
@@ -25,6 +30,9 @@ namespace CheckCarsAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _dbContext;
 
+        #endregion
+
+        #region Constructor
         public AccountController(
             UserManager<CheckCarsAPI.Models.UserApp> userM,
             SignInManager<CheckCarsAPI.Models.UserApp> SignInM,
@@ -44,6 +52,9 @@ namespace CheckCarsAPI.Controllers
             _roleManager = roleM;
         }
 
+        #endregion
+
+        #region Public Endpoints
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
@@ -150,7 +161,7 @@ namespace CheckCarsAPI.Controllers
             }
             return Unauthorized();
         }
-        
+
         [HttpPost("Forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
@@ -226,7 +237,6 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(new { errors = result.Errors });
         }
 
-
         [Authorize]
         [HttpGet]
         public IActionResult Verificar()
@@ -236,6 +246,8 @@ namespace CheckCarsAPI.Controllers
             var roles = string.Join(", ", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value));
             return Content($"Usuario: {nombre}, Autenticado: {autenticado}, Roles: {roles}");
         }
+        #endregion
+
         #region  Private Methods
 
 

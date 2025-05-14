@@ -13,15 +13,25 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class CarsController : ControllerBase
     {
+        #region Private Fields
+        
         private readonly ReportsDbContext _context;
+
+        #endregion
+
+        #region Constructors
 
         public CarsController(ReportsDbContext context)
         {
             _context = context;
         }
+
+        #endregion
+
+        #region Public Methods
 
         // GET: api/Cars
         [HttpGet]
@@ -94,6 +104,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/Cars/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteCar(int id)
         {
             var car = await _context.Cars.FindAsync(id);
@@ -108,9 +119,15 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
+        #endregion
+
+        #region Private Methods
+
         private bool CarExists(int id)
         {
             return _context.Cars.Any(e => e.CarId == id);
         }
+
+        #endregion
     }
 }

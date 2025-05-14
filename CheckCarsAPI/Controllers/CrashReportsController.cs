@@ -18,16 +18,25 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class CrashReportsController : ControllerBase
     {
+        #region Properties
         private readonly ReportsDbContext _context;
         private readonly EmailService _emailService;
+
+        #endregion
+
+        #region Constructor
 
         public CrashReportsController(ReportsDbContext context, EmailService emailService)
         {
             _context = context;
             _emailService = emailService;
         }
+
+        #endregion
+
         #region  EndPoints
 
         [HttpGet("search")]
@@ -199,7 +208,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/CrashReports/5
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteCrashReport(string id)
         {
             var crashReport = await _context.CrashReports.FirstAsync(e=>e.ReportId == id);
@@ -213,7 +222,9 @@ namespace CheckCarsAPI.Controllers
 
             return NoContent();
         }
+      
         #endregion
+     
         #region  Private Methods
         private async Task CheckCarDependency(CrashReport report)
         {

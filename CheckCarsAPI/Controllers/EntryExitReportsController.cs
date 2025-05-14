@@ -19,12 +19,18 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class EntryExitReportsController : ControllerBase
     {
+        #region Properties
+
         private readonly ReportsDbContext _context;
         private readonly EmailService _EmailService;
 
+        #endregion
+
+        #region Constructor
+        
         public EntryExitReportsController(
             ReportsDbContext context,
             EmailService email)
@@ -32,9 +38,12 @@ namespace CheckCarsAPI.Controllers
             _context = context;
             _EmailService = email;
         }
+
+        #endregion
+
         #region  EndPoints
+
         [HttpGet("ByCar/{id}")]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetByCar(int carId = 0)
         {    
             try
@@ -73,7 +82,6 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpGet("search")]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(
             DateTime? date = null,
             string? plate = null,
@@ -137,7 +145,6 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/EntryExitReports
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetEntryExitReports()
         {
             return await _context.EntryExitReports
@@ -145,10 +152,8 @@ namespace CheckCarsAPI.Controllers
                 .OrderByDescending(e => e.Created)
                 .ToListAsync();
         }
-
         // GET: api/EntryExitReports/5
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<ActionResult<EntryExitReport>> GetEntryExitReport(string id)
         {
             var entryExitReport = await _context.EntryExitReports.FindAsync(id);
@@ -162,7 +167,6 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/EntryExitReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> PutEntryExitReport(string id, EntryExitReport entryExitReport)
         {
             if (!id.Equals(entryExitReport.ReportId))
@@ -265,7 +269,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/EntryExitReports/5
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteEntryExitReport(string id)
         {
             var entryExitReport = await _context.EntryExitReports.FindAsync(id);

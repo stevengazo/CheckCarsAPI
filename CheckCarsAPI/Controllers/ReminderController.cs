@@ -1,5 +1,6 @@
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,15 +8,23 @@ namespace CheckCarsAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize(Roles = "Admin,Manager,User,Guest")]
 public class ReminderController : ControllerBase
 {
+    #region Fields
+    
     private readonly ReportsDbContext _reportsDbContext;
 
+    #endregion
+
+    #region Constructor
     public ReminderController(ReportsDbContext reportsDbContext)
     {
         _reportsDbContext = reportsDbContext;
     }
-
+    #endregion
+   
+    #region endpoint
     // GET: api/reminders
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Reminder>>> GetReminders()
@@ -36,6 +45,7 @@ public class ReminderController : ControllerBase
 
         return reminder;
     }
+    
     // GET: api/remindersbycar/5
     [HttpGet("remindersbycar/{id}")]
     public async Task<ActionResult<List<Reminder>>> RemindersByCar(int id)
@@ -102,6 +112,7 @@ public class ReminderController : ControllerBase
 
     // DELETE: api/reminders/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Manager")]
     public async Task<IActionResult> DeleteReminder(int id)
     {
         var reminder = await _reportsDbContext.Reminders.FindAsync(id);
@@ -116,8 +127,12 @@ public class ReminderController : ControllerBase
         return NoContent();
     }
 
+    #endregion
+
+    #region private methods
     private bool ReminderExists(int id)
     {
         return _reportsDbContext.Reminders.Any(e => e.ReminderId == id);
     }
+    #endregion
 }

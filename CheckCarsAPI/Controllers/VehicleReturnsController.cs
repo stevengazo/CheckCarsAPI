@@ -14,26 +14,35 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class VehicleReturnsController : ControllerBase
     {
-       private readonly ReportsDbContext _context;
+        #region private fields
 
-       public VehicleReturnsController(ReportsDbContext context)
+        private readonly ReportsDbContext _context;
+
+        #endregion
+
+        #region Constructors
+        public VehicleReturnsController(ReportsDbContext context)
         {
             _context = context;
         }
+        #endregion
+
+        #region Public Methods
 
         // GET: api/VehicleReturns
         [HttpGet]
         [Authorize]
-       public async Task<ActionResult<IEnumerable<VehicleReturn>>> GetVehicleReturns()
+        public async Task<ActionResult<IEnumerable<VehicleReturn>>> GetVehicleReturns()
         {
             return await _context.VehicleReturns.ToListAsync();
         }
         // GET: api/VehicleReturns/byCar/id
         [HttpGet("api/VehicleReturns/byCar/{id}")]
         [Authorize]
-       public async Task<ActionResult<IEnumerable<VehicleReturn>>> GetVehicleReturns(string id)
+        public async Task<ActionResult<IEnumerable<VehicleReturn>>> GetVehicleReturns(string id)
         {
             try
             {
@@ -52,7 +61,7 @@ namespace CheckCarsAPI.Controllers
         // GET: api/VehicleReturns/5
         [HttpGet("{id}")]
         [Authorize]
-       public async Task<ActionResult<VehicleReturn>> GetVehicleReturn(string id)
+        public async Task<ActionResult<VehicleReturn>> GetVehicleReturn(string id)
         {
             var vehicleReturn = await _context.VehicleReturns.FindAsync(id);
 
@@ -68,7 +77,7 @@ namespace CheckCarsAPI.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize]
-       public async Task<IActionResult> PutVehicleReturn(string id, VehicleReturn vehicleReturn)
+        public async Task<IActionResult> PutVehicleReturn(string id, VehicleReturn vehicleReturn)
         {
             if (id != vehicleReturn.ReportId)
             {
@@ -99,7 +108,7 @@ namespace CheckCarsAPI.Controllers
         // POST: api/VehicleReturns
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-       public async Task<ActionResult<VehicleReturn>> PostVehicleReturn(VehicleReturn vehicleReturn)
+        public async Task<ActionResult<VehicleReturn>> PostVehicleReturn(VehicleReturn vehicleReturn)
         {
             try
             {
@@ -132,8 +141,8 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/VehicleReturns/5
         [HttpDelete("{id}")]
-        [Authorize]
-       public async Task<IActionResult> DeleteVehicleReturn(string id)
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> DeleteVehicleReturn(string id)
         {
             var vehicleReturn = await _context.VehicleReturns.FindAsync(id);
             if (vehicleReturn == null)
@@ -147,12 +156,16 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-       private bool VehicleReturnExists(string id)
+        #endregion
+
+        #region Private Methods
+
+        private bool VehicleReturnExists(string id)
         {
             return _context.VehicleReturns.Any(e => e.ReportId == id);
         }
 
-       private async Task<VehicleReturn> CheckCarDependency(VehicleReturn report)
+        private async Task<VehicleReturn> CheckCarDependency(VehicleReturn report)
         {
             if (report == null || string.IsNullOrEmpty(report.CarPlate))
             {
@@ -171,6 +184,7 @@ namespace CheckCarsAPI.Controllers
             }
             return report;
         }
+        #endregion
 
     }
 }

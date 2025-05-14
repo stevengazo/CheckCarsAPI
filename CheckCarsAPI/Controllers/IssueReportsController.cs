@@ -16,16 +16,26 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class IssueReportsController : ControllerBase
     {
+        #region Properties
+
         private readonly ReportsDbContext _context;
 
+        #endregion
 
-        #region  EndPoints
+        #region Constructor
+
         public IssueReportsController(ReportsDbContext context)
         {
             _context = context;
         }
+
+        #endregion
+
+        #region  EndPoints
+
         [HttpGet("search")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<IssueReport>>> GetSearchIssueReports(
@@ -85,7 +95,6 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/IssueReports
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<IssueReport>>> GetIssueReports()
         {
             return await _context.IssueReports.OrderByDescending(e => e.Created).Take(200).ToListAsync();
@@ -93,7 +102,6 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/IssueReports/5
         [HttpGet("{id}")]
-        [Authorize]
         public async Task<ActionResult<IssueReport>> GetIssueReport(string id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
@@ -109,7 +117,6 @@ namespace CheckCarsAPI.Controllers
         // PUT: api/IssueReports/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> PutIssueReport(string id, IssueReport issueReport)
         {
             if (!id.Equals(issueReport.ReportId))
@@ -197,7 +204,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/IssueReports/5
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteIssueReport(string id)
         {
             var issueReport = await _context.IssueReports.FindAsync(id);
@@ -213,6 +220,7 @@ namespace CheckCarsAPI.Controllers
         }
 
         #endregion
+
         #region  Private methods
         /// <summary>
         /// Check if the report have some relation with the cars in the database. If exists, update the report with the CardId

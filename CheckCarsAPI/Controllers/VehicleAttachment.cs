@@ -1,6 +1,7 @@
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
 using CheckCarsAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,16 +10,25 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class VehicleAttachmentsController : ControllerBase
     {
+        #region Private Fields
         private readonly ReportsDbContext _context;
         private readonly IFileService _fileService;
+        #endregion
 
+        #region Constructors
+        
         public VehicleAttachmentsController(ReportsDbContext context, IFileService fileService)
         {
             _context = context;
             _fileService = fileService;
         }
+        
+        #endregion
+
+        #region endPoint
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VehicleAttachment>>> GetAttachments()
@@ -80,6 +90,7 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteAttachment(string id)
         {
             var attachment = await _context.VehicleAttachments.FindAsync(id);
@@ -97,5 +108,7 @@ namespace CheckCarsAPI.Controllers
 
             return NoContent();
         }
+
+        #endregion
     }
 }

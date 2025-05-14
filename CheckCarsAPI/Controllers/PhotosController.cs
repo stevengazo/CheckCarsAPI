@@ -13,15 +13,23 @@ namespace CheckCarsAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,Manager,User,Guest")]
     public class PhotosController : ControllerBase
     {
+        #region Fields
+
         private readonly ReportsDbContext _context;
 
+        #endregion
+
+        #region constructor
         public PhotosController(ReportsDbContext context)
         {
             _context = context;
         }
+        #endregion
+
+        #region Properties
 
         // GET: api/Photos
         [HttpGet]
@@ -123,6 +131,7 @@ namespace CheckCarsAPI.Controllers
 
         // DELETE: api/Photos/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeletePhoto(string id)
         {
             var photo = await _context.Photos.FirstOrDefaultAsync(e => e.PhotoId == id);
@@ -137,9 +146,13 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
+        #endregion
+
+        #region Private Methods
         private bool PhotoExists(string id)
         {
             return _context.Photos.Any(e => e.PhotoId == id);
         }
+        #endregion
     }
 }

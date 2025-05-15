@@ -15,6 +15,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 name: "Cars",
                 columns: table => new
                 {
+
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),

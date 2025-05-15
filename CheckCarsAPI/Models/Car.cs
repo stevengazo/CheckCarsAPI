@@ -5,6 +5,7 @@ namespace CheckCarsAPI.Models
 {
     public class Car
     {
+
         [Key]
         public string CarId { get; set; } = Guid.NewGuid().ToString();
         public string Model { get; set; }

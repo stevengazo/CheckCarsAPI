@@ -48,7 +48,7 @@ public class ReminderController : ControllerBase
     
     // GET: api/remindersbycar/5
     [HttpGet("remindersbycar/{id}")]
-    public async Task<ActionResult<List<Reminder>>> RemindersByCar(int id)
+    public async Task<ActionResult<List<Reminder>>> RemindersByCar(string id)
     {
         List<Reminder> Reminders= await _reportsDbContext.Reminders
             .Include(e=>e.Car)

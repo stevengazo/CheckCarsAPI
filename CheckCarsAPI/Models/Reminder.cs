@@ -14,7 +14,7 @@ public class Reminder
     public bool IsCompleted { get; set; }
     public bool SendIt {get;set;}
     public string? Author { get; set; }
-    public int CarId { get; set; }
+    public string CarId { get; set; }
     public Car? Car { get; set; }
     public List<ReminderDest>? ReminderDests { get; set; } = new List<ReminderDest>();
 }

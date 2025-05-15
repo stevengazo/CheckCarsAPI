@@ -11,7 +11,6 @@ namespace CheckCarsAPI.Models
     public abstract class Report
     {
         [Key]
-
         public string ReportId { get; set; } = Guid.NewGuid().ToString();
         public string? Author { get; set; }
         public DateTime Created { get; set; }
@@ -20,7 +19,7 @@ namespace CheckCarsAPI.Models
         public double Longitude { get; set; }
         public ICollection<Photo>? Photos { get; set; } = new List<Photo>();
         public ICollection<Commentary>? Commentaries { get; set; } = new List<Commentary>();
-        public int? CarId { get; set; }
+        public string? CarId { get; set; }
         public Car? Car { get; set; }
     }
 }

@@ -20,8 +20,8 @@ namespace CheckCarsAPI.Controllers
             if (!context.Cars.Any())
             {
                 context.Cars.AddRange(
-                    new Car { CarId = 1, Plate = "AAA123", Model = "Toyota" },
-                    new Car { CarId = 2, Plate = "BBB456", Model = "Honda" }
+                    new Car { CarId = "fds", Plate = "AAA123", Model = "Toyota" },
+                    new Car { CarId = "dfs", Plate = "BBB456", Model = "Honda" }
                 );
                 context.SaveChanges();
             }
@@ -74,7 +74,7 @@ namespace CheckCarsAPI.Controllers
         {
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
-            var newCar = new Car { CarId = 3, Plate = "CCC789", Model = "Mazda" };
+            var newCar = new Car { CarId = "3", Plate = "CCC789", Model = "Mazda" };
 
             var result = await controller.PostCar(newCar);
 
@@ -101,9 +101,9 @@ namespace CheckCarsAPI.Controllers
         {
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
-            var updatedCar = new Car { CarId = 2, Plate = "UPDATED456", Model = "UpdatedHonda" };
+            var updatedCar = new Car { CarId = "2", Plate = "UPDATED456", Model = "UpdatedHonda" };
 
-            var result = await controller.PutCar(2, updatedCar);
+            var result = await controller.PutCar("2", updatedCar);
 
             Assert.IsType<NoContentResult>(result);
             var car = await context.Cars.FindAsync(2);
@@ -116,9 +116,9 @@ namespace CheckCarsAPI.Controllers
         {
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
-            var updatedCar = new Car { CarId = 99, Plate = "Mismatch", Model = "Mismatch" };
+            var updatedCar = new Car { CarId = "2", Plate = "Mismatch", Model = "Mismatch" };
 
-            var result = await controller.PutCar(2, updatedCar);
+            var result = await controller.PutCar("2", updatedCar);
 
             Assert.IsType<BadRequestResult>(result);
         }

@@ -44,13 +44,13 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<CrashReport>>> GetSearchCrashReport(
              DateTime? date = null,
             string plate = "",
-            int carId = 0,
+            string carId = "",
             string author = "")
         {
             try
             {
                 // Validación básica de entrada
-                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                if (date is null && string.IsNullOrEmpty(plate) &&  string.IsNullOrEmpty(carId) && string.IsNullOrEmpty(author))
                 {
                     return BadRequest("At least one search parameter must be provided.");
                 }
@@ -64,7 +64,7 @@ namespace CheckCarsAPI.Controllers
                 {
                     query = query.Where(e => e.CarPlate == plate);
                 }
-                if (carId > 0)
+                if ( !string.IsNullOrEmpty( carId) )
                 {
                     query = query.Where(e => e.CarId == carId);
                 }
@@ -228,12 +228,20 @@ namespace CheckCarsAPI.Controllers
         #region  Private Methods
         private async Task CheckCarDependency(CrashReport report)
         {
-            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
-            if (HaveDepency)
+            if(string.IsNullOrEmpty(report.CarPlate))
             {
-                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
-                _context.CrashReports.Update(report);
-                _context.SaveChanges();
+                Console.WriteLine($" placa vacia {report.CarPlate}");
+                return;
+            }
+            if (string.IsNullOrEmpty(report.CarId))
+            {
+                var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+                if (HaveDepency)
+                {
+                    report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
+                    _context.CrashReports.Update(report);
+                    _context.SaveChanges();
+                }
             }
         }
         private async Task<bool> CrashReportExistsAsync(string id)

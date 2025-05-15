@@ -30,14 +30,8 @@ namespace CheckCarsAPI.Controllers
 
         #region endPoint
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> GetAttachments()
-        {
-            return await _context.VehicleAttachments.Include(v => v.Car).ToListAsync();
-        }
-
-        [HttpGet("/attachmentsbyCar/{id}")]
-        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> AttachmentsByCar(int id)
+        [HttpGet("ByCar/{id}")]
+        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> AttachmentsByCar(string id)
         {
 
             var data = await _context.VehicleAttachments
@@ -67,8 +61,8 @@ namespace CheckCarsAPI.Controllers
             return attachment;
         }
 
-        [HttpPost("upload/{carId}")]
-        public async Task<IActionResult> UploadAttachment(int carId, IFormFile file)
+        [HttpPost("{carId}")]
+        public async Task<IActionResult> UploadAttachment(string carId, IFormFile file)
         {
             var carObj = await _context.Cars.FindAsync(carId);
             if (file == null || file.Length == 0)

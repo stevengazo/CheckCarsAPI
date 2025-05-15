@@ -224,7 +224,7 @@ public class EntryExitReportsControllerTests
         var testReport = new EntryExitReport
         {
             CarPlate = "XYZ123",
-            CarId = 123,
+            CarId = "123",
             Author = "CarIdTester",
             Created = DateTime.UtcNow
         };
@@ -252,7 +252,7 @@ public class EntryExitReportsControllerTests
         var testReport = new EntryExitReport
         {
             CarPlate = "AUTH123",
-            CarId = 555,
+            CarId = "fds",
             Author = "AuthorTest",
             Created = DateTime.UtcNow
         };
@@ -284,7 +284,7 @@ public class EntryExitReportsControllerTests
         var testReport = new EntryExitReport
         {
             CarPlate = "TEST123",
-            CarId = 999,
+            CarId = "999",
             Author = "JaneDoe",
             Created = DateTime.UtcNow
         };

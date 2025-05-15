@@ -19,11 +19,13 @@ namespace CheckCarsAPI.Controllers
     public class AccountControllerTests
     {
         private readonly Mock<UserManager<UserApp>> _userManagerMock;
+        private readonly Mock<RoleManager<IdentityRole>> _rolManagerMock;
         private readonly Mock<SignInManager<UserApp>> _signInManagerMock;
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly Mock<EmailService> _emailServiceMock;
         private readonly ApplicationDbContext _dbContext;
         private readonly Mock<ILogger<AccountController>> _loggerMock;
+       
 
         private readonly AccountController _controller;
 
@@ -31,7 +33,9 @@ namespace CheckCarsAPI.Controllers
         {
             var userStore = new Mock<IUserStore<UserApp>>();
             _userManagerMock = new Mock<UserManager<UserApp>>(userStore.Object, null, null, null, null, null, null, null, null);
-
+            _rolManagerMock = new Mock<RoleManager<IdentityRole>>(
+                new Mock<IRoleStore<IdentityRole>>().Object,
+                null, null, null, null);
             var contextAccessor = new Mock<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
             var userPrincipalFactory = new Mock<IUserClaimsPrincipalFactory<UserApp>>();
             _signInManagerMock = new Mock<SignInManager<UserApp>>(_userManagerMock.Object,
@@ -55,6 +59,7 @@ namespace CheckCarsAPI.Controllers
                 _configurationMock.Object,
                 _emailServiceMock.Object,
                 _dbContext,_loggerMock.Object
+                , _rolManagerMock.Object
             );
         }
 

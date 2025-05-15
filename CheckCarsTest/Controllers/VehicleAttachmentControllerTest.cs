@@ -50,7 +50,7 @@ public class VehicleAttachmentsControllerTests
         var fileService = new Mock<IFileService>();
 
         var controller = new VehicleAttachmentsController(context, fileService.Object);
-        var result = await controller.GetAttachments();
+        var result = await controller.GetAttachment(context.Cars.First().CarId.ToString());
 
         var actionResult = Assert.IsType<ActionResult<IEnumerable<VehicleAttachment>>>(result);
         var attachments = Assert.IsType<List<VehicleAttachment>>(actionResult.Value);

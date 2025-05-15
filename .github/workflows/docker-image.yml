@@ -24,11 +24,16 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Set version tag
+    - name: Set version tag based on branch
       id: vars
-      run: echo "VERSION_TAG=dev" >> $GITHUB_ENV
+      run: |
+        if [[ "${GITHUB_REF##*/}" == "Development" ]]; then
+          echo "VERSION_TAG=dev" >> $GITHUB_ENV
+        else
+          echo "VERSION_TAG=latest" >> $GITHUB_ENV
+        fi
 
-    - name: Build Docker image with date tag
+    - name: Build Docker image with version tag
       uses: docker/build-push-action@v5
       with:
         context: ./CheckCarsAPI

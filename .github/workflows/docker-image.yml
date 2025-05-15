@@ -25,7 +25,7 @@ jobs:
 
     - name: Set version tag
       id: vars
-      run: echo "VERSION_TAG=desarrollo-$(date +%Y%m%d)" >> $GITHUB_ENV
+      run: echo "VERSION_TAG=dev" >> $GITHUB_ENV
 
     - name: Build Docker image with date tag
       uses: docker/build-push-action@v5

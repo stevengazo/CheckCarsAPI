@@ -3,6 +3,7 @@ name: Docker Compose CI
 on:
   push:
     branches:
+      - main
       - Development
   pull_request:
 

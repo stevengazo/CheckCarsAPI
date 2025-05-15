@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   checkcarsapi:
-    image: checkcarsapi:development
+    image: stevengazo/checkcarsapi:development
     build:
       context: ./CheckCarsAPI/
       dockerfile: Dockerfile

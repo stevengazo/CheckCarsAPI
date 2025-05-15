@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   checkcarsapi:
-    image: checkcarsapi:${VERSION_TAG}
+    image: checkcarsapi:development
     build:
       context: ./CheckCarsAPI/
       dockerfile: Dockerfile

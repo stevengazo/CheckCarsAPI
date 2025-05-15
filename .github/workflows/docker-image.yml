@@ -34,7 +34,7 @@ jobs:
         context: ./CheckCarsAPI
         file: ./CheckCarsAPI/Dockerfile
         push: true
-        tags: checkcarsapi:${{ env.VERSION_TAG }}
+        tags: ${{ secrets.DOCKER_USERNAME }}/checkcarsapi:${{ env.VERSION_TAG }}
 
     - name: Run docker-compose with version tag
       env:

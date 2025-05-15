@@ -95,7 +95,7 @@ Console.WriteLine("[INFO] Setting up CORS policy...");
 // Política de CORS para desarrollo
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddCors(options =>
+   /* builder.Services.AddCors(options =>
     {
         options.AddPolicy("DevelopmentPolicy", policy =>
         {
@@ -104,7 +104,7 @@ if (builder.Environment.IsDevelopment())
                   .AllowAnyMethod()
                   .AllowCredentials(); // Esto permite las cookies si es necesario
         });
-    });
+    });**/
 }
 
 builder.Services.AddCors(options =>
@@ -305,12 +305,12 @@ app.UseSwaggerUI();
 if (app.Environment.IsDevelopment())
 {
    // app.UseHttpsRedirection();
-    app.UseCors("DevelopmentPolicy");
+ //   app.UseCors("DevelopmentPolicy");
 }
 
 app.UseCors("AnyOrigin");
 app.UseAuthentication();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();

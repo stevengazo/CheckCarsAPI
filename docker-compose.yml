@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   checkcarsapi:
-    image: checkcarsapi
+    image: checkcarsapi:${VERSION_TAG}
     build:
       context: ./CheckCarsAPI/
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
-      - "443:443"   # HTTPS
+      - "8080:8080" 
+      - "443:443" 
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 

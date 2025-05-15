@@ -33,7 +33,7 @@ jobs:
       with:
         context: ./CheckCarsAPI
         file: ./CheckCarsAPI/Dockerfile
-        push: false
+        push: true
         tags: checkcarsapi:${{ env.VERSION_TAG }}
 
     - name: Run docker-compose with version tag

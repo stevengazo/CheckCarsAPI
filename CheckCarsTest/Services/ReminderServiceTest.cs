@@ -35,7 +35,7 @@ public class ReminderServiceTests
         await appContext.SaveChangesAsync();
 
         // Fake car and reminder
-        var car = new Car {CarId = 1, Brand = "Toyota", Model = "Corolla", Plate = "XYZ123" };
+        var car = new Car {CarId = "1", Brand = "Toyota", Model = "Corolla", Plate = "XYZ123" };
         var reminder = new Reminder
         {
             ReminderId = 1,

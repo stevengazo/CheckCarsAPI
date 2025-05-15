@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class migracionv2 : Migration
+    public partial class V3Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,8 +15,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 name: "Cars",
                 columns: table => new
                 {
-                    CarId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FuelType = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -82,17 +81,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Deleted = table.Column<bool>(type: "bit", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false)
+                    CarId = table.Column<int>(type: "int", nullable: false),
+                    CarId1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Bookings", x => x.BookingId);
                     table.ForeignKey(
-                        name: "FK_Bookings_Cars_CarId",
-                        column: x => x.CarId,
+                        name: "FK_Bookings_Cars_CarId1",
+                        column: x => x.CarId1,
                         principalTable: "Cars",
-                        principalColumn: "CarId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CarId");
                 });
 
             migrationBuilder.CreateTable(
@@ -107,17 +106,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     mileage = table.Column<int>(type: "int", nullable: false),
                     NextMileage = table.Column<int>(type: "int", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false)
+                    CarId = table.Column<int>(type: "int", nullable: false),
+                    CarId1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CarsService", x => x.CarServiceId);
                     table.ForeignKey(
-                        name: "FK_CarsService_Cars_CarId",
-                        column: x => x.CarId,
+                        name: "FK_CarsService_Cars_CarId1",
+                        column: x => x.CarId1,
                         principalTable: "Cars",
-                        principalColumn: "CarId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "CarId");
                 });
 
             migrationBuilder.CreateTable(
@@ -130,7 +129,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: true),
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DateOfCrash = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CrashDetails = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Location = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -156,7 +155,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: true),
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     mileage = table.Column<long>(type: "bigint", nullable: false),
                     FuelLevel = table.Column<double>(type: "float", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -191,7 +190,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: true),
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Priority = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -219,7 +218,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
                     SendIt = table.Column<bool>(type: "bit", nullable: false),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CarId = table.Column<int>(type: "int", nullable: false)
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -241,7 +240,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     FilePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false)
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -264,7 +263,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: true),
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     mileage = table.Column<long>(type: "bigint", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -299,14 +298,14 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_CarId",
+                name: "IX_Bookings_CarId1",
                 table: "Bookings",
-                column: "CarId");
+                column: "CarId1");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CarsService_CarId",
+                name: "IX_CarsService_CarId1",
                 table: "CarsService",
-                column: "CarId");
+                column: "CarId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_commentaries_ReportId",

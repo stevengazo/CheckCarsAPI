@@ -31,7 +31,7 @@ namespace CheckCarsAPI.Controllers
         #region endPoint
 
         [HttpGet("ByCar/{id}")]
-        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> AttachmentsByCar(int id)
+        public async Task<ActionResult<IEnumerable<VehicleAttachment>>> AttachmentsByCar(string id)
         {
 
             var data = await _context.VehicleAttachments
@@ -62,7 +62,7 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpPost("{carId}")]
-        public async Task<IActionResult> UploadAttachment(int carId, IFormFile file)
+        public async Task<IActionResult> UploadAttachment(string carId, IFormFile file)
         {
             var carObj = await _context.Cars.FindAsync(carId);
             if (file == null || file.Length == 0)

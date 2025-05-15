@@ -44,14 +44,14 @@ namespace CheckCarsAPI.Controllers
         #region  EndPoints
 
         [HttpGet("ByCar/{id}")]
-        public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetByCar(int carId = 0)
+        public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetByCar(string carId = "")
         {    
             try
             {
                 var query = _context.EntryExitReports.AsQueryable();
-                if (carId == 0)    
+                if ( string.IsNullOrEmpty(  carId ) )    
                 {
-                return ValidationProblem("El id del coche no puede ser 0");
+                return ValidationProblem("El id del coche no puede esta vacio");
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<EntryExitReport>>> GetSearchExitReports(
             DateTime? date = null,
             string? plate = null,
-            int? carId = null,
+            string? carId = null,
             string? author = null)
         {
             try
@@ -109,9 +109,9 @@ namespace CheckCarsAPI.Controllers
                     query = query.Where(e => e.CarPlate.Contains(plate));
                 }
 
-                if (carId.HasValue)
+                if ( !string.IsNullOrEmpty( carId))
                 {
-                    query = query.Where(e => e.CarId == carId.Value);
+                    query = query.Where(e => e.CarId == carId);
                 }
 
                 if (!string.IsNullOrWhiteSpace(author))
@@ -298,16 +298,20 @@ namespace CheckCarsAPI.Controllers
                 throw new ArgumentNullException(nameof(report), "Report or CarPlate cannot be null or empty.");
             }
 
-            string normalizedPlate = report.CarPlate.ToLower();
-
-            var car = await _context.Cars
-                .FirstOrDefaultAsync(e => e.Plate.ToLower() == normalizedPlate);
-
-            if (car != null)
+            if( string.IsNullOrEmpty(report.CarId) )
             {
-                report.CarId = car.CarId;
-                _context.EntryExitReports.Update(report);
-                await _context.SaveChangesAsync();
+
+                string normalizedPlate = report.CarPlate.ToLower();
+
+                var car = await _context.Cars
+                    .FirstOrDefaultAsync(e => e.Plate.ToLower() == normalizedPlate);
+
+                if (car != null)
+                {
+                    report.CarId = car.CarId;
+                    _context.EntryExitReports.Update(report);
+                    await _context.SaveChangesAsync();
+                }
             }
         }
 

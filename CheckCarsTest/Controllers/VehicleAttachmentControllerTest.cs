@@ -27,14 +27,14 @@ public class VehicleAttachmentsControllerTests
 
         if (!context.Cars.Any())
         {
-            var car = new Car { CarId = 1, Plate = "ABC123", Brand = "TestBrand" };
+            var car = new Car { CarId = "1", Plate = "ABC123", Brand = "TestBrand" };
             context.Cars.Add(car);
             context.VehicleAttachments.Add(new VehicleAttachment
             {
                 AttachmentId = "att1",
                 FileName = "file.txt",
                 FilePath = "folder/file.txt",
-                CarId = 1,
+                CarId = "1",
                 Car = car
             });
             context.SaveChanges();
@@ -98,7 +98,7 @@ public class VehicleAttachmentsControllerTests
         };
 
         var controller = new VehicleAttachmentsController(context, fileService.Object);
-        var result = await controller.UploadAttachment(1, file);
+        var result = await controller.UploadAttachment("1", file);
 
         var createdAt = Assert.IsType<CreatedAtActionResult>(result);
         var attachment = Assert.IsType<VehicleAttachment>(createdAt.Value);
@@ -112,7 +112,7 @@ public class VehicleAttachmentsControllerTests
         var fileService = new Mock<IFileService>();
         var controller = new VehicleAttachmentsController(context, fileService.Object);
 
-        var result = await controller.UploadAttachment(1, null);
+        var result = await controller.UploadAttachment("1", null);
 
         var badRequest = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("File not selected", badRequest.Value);

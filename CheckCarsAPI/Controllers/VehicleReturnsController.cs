@@ -47,9 +47,8 @@ namespace CheckCarsAPI.Controllers
         {
             try
             {
-                int _id = Convert.ToInt32(id);
                 var vehicleReturns = await _context.VehicleReturns
-                    .Where(e => e.CarId == _id)
+                    .Where(e => e.CarId == id)
                     .ToListAsync();
                 return vehicleReturns;
             }
@@ -63,7 +62,7 @@ namespace CheckCarsAPI.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<VehicleReturn>>> Search(
             
-            DateTime? date = null ,  string? Plate=null, int? CarId = null, string? Author = null)
+            DateTime? date = null ,  string? Plate=null, string? CarId = null, string? Author = null)
         {
             try
             {
@@ -83,9 +82,9 @@ namespace CheckCarsAPI.Controllers
                 {
                     query = query.Where(e => e.CarPlate.ToLower().Contains(Plate.ToLower()));
                 }
-                if (CarId != null)
+                if (!string.IsNullOrEmpty( CarId ))
                 {
-                    query = query.Where(e => e.CarId == CarId);
+                    query = query.Where(e => e.CarId.Equals( CarId ));
                 }
 
                 if (!string.IsNullOrEmpty(Author))
@@ -263,20 +262,23 @@ namespace CheckCarsAPI.Controllers
 
         private async Task<VehicleReturn> CheckCarDependency(VehicleReturn report)
         {
-            if (report == null || string.IsNullOrEmpty(report.CarPlate))
+            if (string.IsNullOrEmpty(report.CarId))
             {
-                throw new ArgumentNullException(nameof(report), "Report or CarPlate cannot be null or empty.");
-            }
+                if (report == null || string.IsNullOrEmpty(report.CarPlate))
+                {
+                    throw new ArgumentNullException(nameof(report), "Report or CarPlate cannot be null or empty.");
+                }
 
-            string normalizedPlate = report.CarPlate.ToLower();
+                string normalizedPlate = report.CarPlate.ToLower();
 
-            var car = await _context.Cars
-                .FirstOrDefaultAsync(e => e.Plate.ToLower() == normalizedPlate);
+                var car = await _context.Cars
+                    .FirstOrDefaultAsync(e => e.Plate.ToLower() == normalizedPlate);
 
-            if (car != null)
-            {
-                report.CarId = car.CarId;
-                return report;
+                if (car != null)
+                {
+                    report.CarId = car.CarId;
+                    return report;
+                }
             }
             return report;
         }

@@ -20,7 +20,7 @@ namespace CheckCarsAPI.Models
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
         // Relación con el vehículo
-        public int CarId { get; set; }
+        public string CarId { get; set; }
 
         [ForeignKey("CarId")]
         public Car? Car { get; set; }

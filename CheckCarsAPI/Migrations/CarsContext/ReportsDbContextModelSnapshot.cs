@@ -33,6 +33,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<string>("CarId1")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
@@ -56,18 +59,15 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.HasKey("BookingId");
 
-                    b.HasIndex("CarId");
+                    b.HasIndex("CarId1");
 
                     b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Car", b =>
                 {
-                    b.Property<int>("CarId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CarId"));
+                    b.Property<string>("CarId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("AdquisitionDate")
                         .HasColumnType("datetime2");
@@ -131,6 +131,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<int>("CarId")
                         .HasColumnType("int");
 
+                    b.Property<string>("CarId1")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -151,7 +154,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.HasKey("CarServiceId");
 
-                    b.HasIndex("CarId");
+                    b.HasIndex("CarId1");
 
                     b.ToTable("CarsService");
                 });
@@ -221,8 +224,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("Author")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("CarId")
-                        .HasColumnType("int");
+                    b.Property<string>("CarId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -278,8 +282,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("Author")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CarId")
-                        .HasColumnType("int");
+                    b.Property<string>("CarId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CarPlate")
                         .HasColumnType("nvarchar(max)");
@@ -305,8 +309,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("AttachmentId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("CarId")
-                        .HasColumnType("int");
+                    b.Property<string>("CarId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -435,9 +440,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("Bookings")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarId1");
 
                     b.Navigation("Car");
                 });
@@ -446,9 +449,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("Services")
-                        .HasForeignKey("CarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CarId1");
 
                     b.Navigation("Car");
                 });

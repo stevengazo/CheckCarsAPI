@@ -1,9 +1,12 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace CheckCarsAPI.Models
 {
     public class Car
     {
-        public int CarId { get; set; }
+        [Key]
+        public string CarId { get; set; } = Guid.NewGuid().ToString();
         public string Model { get; set; }
         public string? Type { get; set; }
         public string? FuelType  { get; set; }

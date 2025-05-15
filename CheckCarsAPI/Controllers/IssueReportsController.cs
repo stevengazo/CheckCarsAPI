@@ -41,13 +41,13 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<IssueReport>>> GetSearchIssueReports(
           DateTime? date = null,
           string plate = null,
-          int carId = 0,
+          string carId = "",
           string author = "")
         {
             try
             {
                 // Validación básica de entrada
-                if (date is null && string.IsNullOrEmpty(plate) && carId <= 0 && string.IsNullOrEmpty(author))
+                if (date is null && string.IsNullOrEmpty(plate) && string.IsNullOrEmpty( carId ) && string.IsNullOrEmpty(author))
                 {
                     return BadRequest("At least one search parameter must be provided.");
                 }
@@ -63,7 +63,7 @@ namespace CheckCarsAPI.Controllers
                 {
                     query = query.Where(e => e.CarPlate == plate);
                 }
-                if (carId > 0)
+                if (string.IsNullOrEmpty(carId))
                 {
                     query = query.Where(e => e.CarId == carId);
                 }
@@ -229,13 +229,20 @@ namespace CheckCarsAPI.Controllers
         /// <returns> A task that represents the asynchronous operation.</returns>
         private async Task CheckCarDependency(IssueReport report)
         {
-            var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
-            if (HaveDepency)
+
+            if( string.IsNullOrEmpty(report.CarId) )
             {
-                report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
-                _context.IssueReports.Update(report);
-                _context.SaveChanges();
+
+                var HaveDepency = _context.Cars.Any(e => e.Plate == report.CarPlate);
+
+                if (HaveDepency)
+                {
+                    report.CarId = _context.Cars.FirstOrDefault(e => e.Plate == report.CarPlate).CarId;
+                    _context.IssueReports.Update(report);
+                    _context.SaveChanges();
+                }
             }
+
         }
         private async Task<bool> IssueReportExists(string id)
         {

@@ -49,9 +49,9 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/Cars/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Car>> GetCar(int id)
+        public async Task<ActionResult<Car>> GetCar(string id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car =  _context.Cars.FirstOrDefault(d=> d.CarId == id);
 
             if (car == null)
             {

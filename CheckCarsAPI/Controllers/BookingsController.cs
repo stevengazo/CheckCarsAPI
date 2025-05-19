@@ -43,6 +43,13 @@ namespace CheckCarsAPI.Controllers
                 .ToListAsync();
         }
 
+        [HttpGet("Search")]
+        public async Task<ActionResult<IEnumerable<Booking>>> GetBookings(DateTime startDate, DateTime EndDate)
+        {
+            return await _context.Bookings
+                .Where(e => e.StartDate >= startDate && e.EndDate <= EndDate)
+                .ToListAsync();
+        }
         [HttpGet("{id}")]
         public async Task<ActionResult<Booking>> GetBooking(int id)
         {

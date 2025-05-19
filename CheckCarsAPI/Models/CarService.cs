@@ -10,7 +10,7 @@
         public int mileage { get; set; }
         public int NextMileage { get; set; }
 
-        public int CarId { get; set; }
+        public string CarId { get; set; }
         public Car? Car { get; set; }
     }
 }

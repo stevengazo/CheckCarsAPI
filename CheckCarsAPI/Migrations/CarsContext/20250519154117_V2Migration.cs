@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class V3Migration : Migration
+    public partial class V2Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,6 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 name: "Cars",
                 columns: table => new
                 {
-
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Model = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -82,17 +81,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Deleted = table.Column<bool>(type: "bit", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false),
-                    CarId1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Bookings", x => x.BookingId);
                     table.ForeignKey(
-                        name: "FK_Bookings_Cars_CarId1",
-                        column: x => x.CarId1,
+                        name: "FK_Bookings_Cars_CarId",
+                        column: x => x.CarId,
                         principalTable: "Cars",
-                        principalColumn: "CarId");
+                        principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -107,17 +106,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     mileage = table.Column<int>(type: "int", nullable: false),
                     NextMileage = table.Column<int>(type: "int", nullable: false),
-                    CarId = table.Column<int>(type: "int", nullable: false),
-                    CarId1 = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CarsService", x => x.CarServiceId);
                     table.ForeignKey(
-                        name: "FK_CarsService_Cars_CarId1",
-                        column: x => x.CarId1,
+                        name: "FK_CarsService_Cars_CarId",
+                        column: x => x.CarId,
                         principalTable: "Cars",
-                        principalColumn: "CarId");
+                        principalColumn: "CarId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -299,14 +298,14 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_CarId1",
+                name: "IX_Bookings_CarId",
                 table: "Bookings",
-                column: "CarId1");
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CarsService_CarId1",
+                name: "IX_CarsService_CarId",
                 table: "CarsService",
-                column: "CarId1");
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_commentaries_ReportId",

@@ -19,8 +19,8 @@ public class CarServicesControllerTests
         if (!context.CarsService.Any())
         {
             context.CarsService.AddRange(
-                new CarService { CarServiceId = 1, Title = "Oil Change", CarId = 1, Date = DateTime.UtcNow },
-                new CarService { CarServiceId = 2, Title = "Tire Replacement", CarId = 2, Date = DateTime.UtcNow }
+                new CarService { CarServiceId = 1, Title = "Oil Change", CarId = "1", Date = DateTime.UtcNow },
+                new CarService { CarServiceId = 2, Title = "Tire Replacement", CarId = "2", Date = DateTime.UtcNow }
             );
             context.SaveChanges();
         }
@@ -61,7 +61,7 @@ public class CarServicesControllerTests
         var context = GetDbContext();
         var controller = new CarServicesController(context);
 
-        var result = await controller.GetCarService(999);
+        var result = await controller.GetCarService("999");
 
         Assert.IsType<NotFoundResult>(result.Result);
     }
@@ -72,7 +72,7 @@ public class CarServicesControllerTests
         var context = GetDbContext();
         var controller = new CarServicesController(context);
 
-        var newService = new CarService { CarServiceId = 3, Title = "Brake Check", CarId = 1, Date = DateTime.UtcNow };
+        var newService = new CarService { CarServiceId = 3, Title = "Brake Check", CarId = "1", Date = DateTime.UtcNow };
 
         var result = await controller.PostCarService(newService);
 
@@ -88,7 +88,7 @@ public class CarServicesControllerTests
         var context = GetDbContext();
         var controller = new CarServicesController(context);
 
-        var updatedService = new CarService { CarServiceId = 1, Title = "Oil Change Updated", CarId = 1, Date = DateTime.UtcNow };
+        var updatedService = new CarService { CarServiceId = 1, Title = "Oil Change Updated", CarId = "1", Date = DateTime.UtcNow };
 
         var result = await controller.PutCarService(1, updatedService);
 
@@ -102,7 +102,7 @@ public class CarServicesControllerTests
         var context = GetDbContext();
         var controller = new CarServicesController(context);
 
-        var updatedService = new CarService { CarServiceId = 2, Title = "Mismatch", CarId = 1, Date = DateTime.UtcNow };
+        var updatedService = new CarService { CarServiceId = 2, Title = "Mismatch", CarId = "1", Date = DateTime.UtcNow };
 
         var result = await controller.PutCarService(3, updatedService);
 

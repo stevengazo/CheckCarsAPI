@@ -30,10 +30,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
 
-                    b.Property<int>("CarId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CarId1")
+                    b.Property<string>("CarId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("Deleted")
@@ -59,7 +57,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.HasKey("BookingId");
 
-                    b.HasIndex("CarId1");
+                    b.HasIndex("CarId");
 
                     b.ToTable("Bookings");
                 });
@@ -128,10 +126,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CarServiceId"));
 
-                    b.Property<int>("CarId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CarId1")
+                    b.Property<string>("CarId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Date")
@@ -154,7 +150,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.HasKey("CarServiceId");
 
-                    b.HasIndex("CarId1");
+                    b.HasIndex("CarId");
 
                     b.ToTable("CarsService");
                 });
@@ -440,7 +436,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("Bookings")
-                        .HasForeignKey("CarId1");
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Car");
                 });
@@ -449,7 +447,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                 {
                     b.HasOne("CheckCarsAPI.Models.Car", "Car")
                         .WithMany("Services")
-                        .HasForeignKey("CarId1");
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Car");
                 });

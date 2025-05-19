@@ -45,7 +45,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/CarServices
         [HttpGet("ByCar/{id}")]
-        public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService(int id)
+        public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService(string id)
         {
             return await _context.CarsService
                 .Include(e=> e.Car)
@@ -55,7 +55,7 @@ namespace CheckCarsAPI.Controllers
 
         // GET: api/CarServices/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<CarService>> GetCarService(int id)
+        public async Task<ActionResult<CarService>> GetCarService(string id)
         {
             var carService = await _context.CarsService.FindAsync(id);
 

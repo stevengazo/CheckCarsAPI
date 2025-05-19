@@ -29,10 +29,18 @@ namespace CheckCarsAPI.Controllers
 
         #region Methods
 
+     
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Booking>>> GetBookings()
         {
             return await _context.Bookings.ToListAsync();
+        }
+        [HttpGet("ByCar/{id}")]
+        public async Task<ActionResult<IEnumerable<Booking>>> GetBookingsByCar(string id)
+        {
+            return await _context.Bookings
+                .Where(e=>e.CarId == id)
+                .ToListAsync();
         }
 
         [HttpGet("{id}")]

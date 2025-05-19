@@ -13,7 +13,7 @@ namespace CheckCarsAPI.Models
         public string UserId { get; set; }
         public bool Deleted { get; set; } = false;
 
-        public int CarId { get; set; }
+        public string CarId { get; set; }
         public Car Car { get; set; }
     }
 }

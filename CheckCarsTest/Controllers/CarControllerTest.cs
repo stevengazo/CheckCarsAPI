@@ -51,7 +51,7 @@ namespace CheckCarsAPI.Controllers
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
 
-            var result = await controller.GetCar(1);
+            var result = await controller.GetCar("1");
 
             var actionResult = Assert.IsType<ActionResult<Car>>(result);
             var car = Assert.IsType<Car>(actionResult.Value);
@@ -64,7 +64,7 @@ namespace CheckCarsAPI.Controllers
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
 
-            var result = await controller.GetCar(99);
+            var result = await controller.GetCar("99");
 
             Assert.IsType<NotFoundResult>(result.Result);
         }

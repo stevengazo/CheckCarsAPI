@@ -57,7 +57,7 @@ namespace CheckCarsAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CarService>> GetCarService(string id)
         {
-            var carService = await _context.CarsService.FindAsync(id);
+            var carService = await _context.CarsService.FirstAsync(e=>e.CarId == id);
 
             if (carService == null)
             {

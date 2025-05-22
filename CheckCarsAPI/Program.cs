@@ -77,7 +77,11 @@ builder.Services.AddIdentity<CheckCarsAPI.Models.UserApp, IdentityRole>()
 
 #region Database Configuration
 
+
+
 Console.WriteLine("[INFO] Registering database contexts...");
+Console.WriteLine(builder.Configuration.GetConnectionString("ReportsConnection"));
+Console.WriteLine(builder.Configuration.GetConnectionString("IdentityUsers"));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityUsers")));
 builder.Services.AddDbContext<ReportsDbContext>(options =>

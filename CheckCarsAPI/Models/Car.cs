@@ -22,7 +22,9 @@ namespace CheckCarsAPI.Models
         public double? Lenght { get; set; }
         public double? Weight { get; set; }
         public string? Notes { get; set; }
-        
+        public bool Deleted { get; set; } = false;
+        public bool IsAvailable { get; set; } = true;
+
         public int? Year { get; set; }
         public ICollection<CarService>? Services { get; set; }
         public ICollection<EntryExitReport>? EntryExitReports { get; set; }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class V2Migration : Migration
+    public partial class V3Reports : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +30,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Lenght = table.Column<double>(type: "float", nullable: true),
                     Weight = table.Column<double>(type: "float", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "bit", nullable: false),
                     Year = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -80,6 +82,7 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Province = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Deleted = table.Column<bool>(type: "bit", nullable: false),
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -129,6 +132,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DateOfCrash = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CrashDetails = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -155,6 +160,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     mileage = table.Column<long>(type: "bigint", nullable: false),
                     FuelLevel = table.Column<double>(type: "float", nullable: false),
@@ -190,10 +197,13 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Priority = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsResolved = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -263,6 +273,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     CarPlate = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Latitude = table.Column<double>(type: "float", nullable: false),
                     Longitude = table.Column<double>(type: "float", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: false),
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
                     CarId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     mileage = table.Column<long>(type: "bigint", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)

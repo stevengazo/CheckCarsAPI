@@ -40,6 +40,10 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Province")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -76,6 +80,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("FuelType")
                         .HasColumnType("nvarchar(max)");
 
@@ -84,6 +91,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<double?>("Lenght")
                         .HasColumnType("float");
@@ -287,11 +297,17 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
 
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
 
                     b.HasKey("ReportId");
 
@@ -405,6 +421,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Priority")
                         .HasColumnType("nvarchar(max)");

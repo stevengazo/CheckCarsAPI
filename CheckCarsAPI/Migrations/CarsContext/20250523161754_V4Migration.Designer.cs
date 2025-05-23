@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     [DbContext(typeof(ReportsDbContext))]
-    [Migration("20250522210621_V3Reports")]
-    partial class V3Reports
+    [Migration("20250523161754_V4Migration")]
+    partial class V4Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

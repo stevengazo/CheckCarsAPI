@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class V3Reports : Migration
+    public partial class V4Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

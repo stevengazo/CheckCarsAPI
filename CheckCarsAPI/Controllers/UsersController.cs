@@ -1,4 +1,5 @@
-﻿using CheckCarsAPI.Models;
+﻿using CheckCarsAPI.Data;
+using CheckCarsAPI.Models;
 using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -16,20 +17,24 @@ namespace CheckCarsAPI.Controllers
         private readonly UserManager<UserApp> _userManager;
         private readonly SignInManager<UserApp> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext _DbContext;
         #endregion
-   
+
         #region Constructor
         public UsersController(
             UserManager<UserApp> userM,
             SignInManager<UserApp> SignInM,
             IConfiguration iconfig,
-            EmailService serviceemail
+            EmailService serviceemail,
+            ApplicationDbContext applicationDbContext
+
         )
         {
             _emailService = serviceemail;
             _userManager = userM;
             _signInManager = SignInM;
             _configuration = iconfig;
+            _DbContext = applicationDbContext;
         }
 
         #endregion
@@ -65,14 +70,28 @@ namespace CheckCarsAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] UserApp user)
+        public async Task<IActionResult> AddUser([FromBody] UserModel user)
         {
             if (user == null)
             {
                 return BadRequest("Invalid user data");
             }
 
-            var result = await _userManager.CreateAsync(user);
+            var exists =  _DbContext.Users.Where(e => e.Email == user.Email || e.UserName == user.UserName).Any();
+            if (exists)
+            {
+                return BadRequest("User with this email or username already exists");
+            }
+
+            UserApp newUser = new UserApp
+            {
+                Email = user.Email,
+                UserName = user.UserName,
+                PasswordHash = _userManager.PasswordHasher.HashPassword(null, user.Password),
+                EmailConfirmed= true // Confirm email by default
+            };
+
+            var result = await _userManager.CreateAsync(newUser);
 
             if (result.Succeeded)
             {
@@ -127,5 +146,12 @@ namespace CheckCarsAPI.Controllers
         }
 
         #endregion
-    }
+
+
+        public class UserModel
+        {
+            public string Email { get; set; }
+            public string UserName { get; set; }
+            public string Password { get; set; }
+        }
 }

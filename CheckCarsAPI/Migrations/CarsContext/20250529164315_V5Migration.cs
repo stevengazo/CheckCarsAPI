@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     /// <inheritdoc />
-    public partial class V4Migration : Migration
+    public partial class V5Migration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -84,7 +84,8 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Province = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Deleted = table.Column<bool>(type: "bit", nullable: false),
-                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    CarId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Confirmed = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

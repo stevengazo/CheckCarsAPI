@@ -34,6 +34,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<bool>("Confirmed")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 

@@ -95,7 +95,7 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
-        [HttpPut("cancel/{id}")]
+        [HttpPatch("cancel/{id}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> CancelBooking(int id)
         {
@@ -110,6 +110,7 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Booking cancelled successfully." });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -126,7 +127,7 @@ namespace CheckCarsAPI.Controllers
         }
 
 
-        [HttpPut("confirm/{id}")]
+        [HttpPatch("confirm/{id}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> ConfirmBooking(int id)
         {
@@ -141,6 +142,7 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Booking confirmed successfully." });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -157,7 +159,7 @@ namespace CheckCarsAPI.Controllers
         }
 
 
-        [HttpPut("reject/{id}")]
+        [HttpPatch("reject/{id}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> RejectBooking(int id)
         {
@@ -172,6 +174,7 @@ namespace CheckCarsAPI.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Booking rejected successfully." });
             }
 
             catch (DbUpdateConcurrencyException)

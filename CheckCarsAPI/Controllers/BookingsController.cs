@@ -47,6 +47,7 @@ namespace CheckCarsAPI.Controllers
         public async Task<ActionResult<IEnumerable<Booking>>> GetBookings(DateTime startDate, DateTime EndDate)
         {
             return await _context.Bookings
+                
                 .Where(e => e.StartDate >= startDate && e.EndDate <= EndDate)
                 .ToListAsync();
         }

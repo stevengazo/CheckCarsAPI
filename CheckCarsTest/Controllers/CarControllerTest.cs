@@ -90,10 +90,10 @@ namespace CheckCarsAPI.Controllers
             var context = GetDbContextWithData();
             var controller = new CarsController(context);
 
-            var result = await controller.DeleteCar(1);
+            var result = await controller.DeleteCar("1");
 
             Assert.IsType<NoContentResult>(result);
-            Assert.Null(await context.Cars.FindAsync(1));
+            Assert.Null(await context.Cars.FindAsync("1"));
         }
 
         [Fact]

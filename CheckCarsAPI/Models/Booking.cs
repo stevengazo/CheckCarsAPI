@@ -52,6 +52,10 @@ namespace CheckCarsAPI.Models
         /// Gets or sets the identifier of the car being booked.
         /// </summary>
         public string CarId { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether the booking is confirmed.
+        /// </summary>
+        public bool Confirmed { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the car associated with the booking.

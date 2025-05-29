@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CheckCarsAPI.Migrations.CarsContext
 {
     [DbContext(typeof(ReportsDbContext))]
-    [Migration("20250523161754_V4Migration")]
-    partial class V4Migration
+    [Migration("20250529164315_V5Migration")]
+    partial class V5Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("CarId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Confirmed")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");

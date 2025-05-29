@@ -37,14 +37,35 @@ namespace CheckCarsAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCars()
         {
-            return await _context.Cars.ToListAsync();
+            return await _context.Cars.Where(ee=> ee.IsAvailable && !ee.Deleted).ToListAsync();
+        }
+
+
+        [HttpGet]
+        [Route("available/{id}")]
+        public async Task<ActionResult> GetAvailableCars(string id)
+        {
+            var car = await _context.Cars
+                .Where(e => e.CarId == id && e.IsAvailable && !e.Deleted)
+                .FirstOrDefaultAsync();
+            if (car == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(car); 
+            }
         }
 
         // GET: api/Cars/Plates
         [HttpGet("plates")]
         public async Task<ActionResult<string[]>> GetCarsPlates()
         {
-            return await _context.Cars.Select( e=> e.Model + "-" + e.Plate).ToArrayAsync();
+            return await _context.Cars
+                .Where(ee => ee.IsAvailable && !ee.Deleted)
+                .Select( e=> e.Model + "-" + e.Plate)
+                .ToArrayAsync();
         }
 
         // GET: api/Cars/5
@@ -105,15 +126,18 @@ namespace CheckCarsAPI.Controllers
         // DELETE: api/Cars/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> DeleteCar(int id)
+        public async Task<IActionResult> DeleteCar(string id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _context.Cars.FirstOrDefaultAsync(e => e.CarId == id);
+
             if (car == null)
             {
                 return NotFound();
             }
 
-            _context.Cars.Remove(car);
+            car.IsAvailable = false;
+            car.Deleted = true;
+            _context.Cars.Update(car);
             await _context.SaveChangesAsync();
 
             return NoContent();

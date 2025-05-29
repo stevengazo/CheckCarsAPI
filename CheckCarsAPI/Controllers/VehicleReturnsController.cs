@@ -186,53 +186,51 @@ namespace CheckCarsAPI.Controllers
                 }
             }
         }
-
         [HttpPost("form")]
         public async Task<ActionResult<VehicleReturn>> PostVehicleReturnForm([FromForm] IFormCollection FormData)
         {
             try
             {
-                if (FormData == null)
+                if (FormData == null || FormData.Count == 0)
                 {
-                    return BadRequest("Form data cannot be null.");
+                    return BadRequest("Form data cannot be null or empty.");
                 }
 
-                else
+                var options = new JsonSerializerSettings()
                 {
-                    var options = new JsonSerializerSettings()
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    };
-                    var imagesFiles = FormData.Files.Where(F => F.ContentType.Contains("image")).ToList();  // Get Images
-                    var ObjType = nameof(VehicleReturn).Split('.').Last(); // ???
-                    var obj =  JsonConvert.DeserializeObject<VehicleReturn>(FormData[ObjType], options);
-                    if(obj == null)
-                    {
-                        return BadRequest("Invalid form data.");
-                    }
-                    if (VehicleReturnExists(obj.ReportId))
-                    {
-                        return Conflict("The Report with the Id " + obj.ReportId + "exists ");
-                    }
-                    obj.Photos = new List<Photo>();
-                    List<Photo> photos = obj.Photos.ToList(); // ??????????????????????????????????????
-                    _context.VehicleReturns.Add(obj);
-                   
-                    await _context.SaveChangesAsync();
-                    await CheckCarDependency(obj);
-                    await SaveImagesAsync(imagesFiles, obj.ReportId, photos);
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                };
 
-                    return Created("", obj.ReportId);
+                var imagesFiles = FormData.Files.Where(f => f.ContentType.Contains("image")).ToList();
+                var objectKey = nameof(VehicleReturn); // Should match the key in FormData
+                var obj = JsonConvert.DeserializeObject<VehicleReturn>(FormData[objectKey], options);
 
+                if (obj == null)
+                {
+                    return BadRequest("Invalid form data.");
                 }
 
+                if (VehicleReturnExists(obj.ReportId))
+                {
+                    return Conflict($"The Report with the Id {obj.ReportId} already exists.");
+                }
+
+                obj.Photos ??= new List<Photo>();
+
+                _context.VehicleReturns.Add(obj);
+                await _context.SaveChangesAsync();
+
+                await CheckCarDependency(obj);
+                await SaveImagesAsync(imagesFiles, obj.ReportId, obj.Photos.ToList());
+
+                return Created("", obj.ReportId);
             }
-            catch (Exception ef)
+            catch (Exception ex)
             {
-                return BadRequest("An error occurred while saving the report: " + ef.Message);
-                
+                return BadRequest($"An error occurred while saving the report: {ex.Message}");
             }
         }
+
 
         // DELETE: api/VehicleReturns/5
         [HttpDelete("{id}")]

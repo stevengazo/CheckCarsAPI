@@ -173,6 +173,7 @@ namespace CheckCarsAPI.Controllers
             {
                 await _context.SaveChangesAsync();
             }
+
             catch (DbUpdateConcurrencyException)
             {
                 if (!BookingExists(id))

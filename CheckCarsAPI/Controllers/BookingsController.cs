@@ -95,6 +95,98 @@ namespace CheckCarsAPI.Controllers
             return NoContent();
         }
 
+        [HttpPut("cancel/{id}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> CancelBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+            booking.Status = "Cancelado";
+            booking.Deleted = true; // Mark as deleted
+            _context.Entry(booking).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BookingExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return NoContent();
+        }
+
+
+        [HttpPut("confirm/{id}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> ConfirmBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+            booking.Status = "Confirmado";
+            booking.Confirmed = true; // Mark as confirmed
+            _context.Entry(booking).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BookingExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return NoContent();
+        }
+
+
+        [HttpPut("reject/{id}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<IActionResult> RejectBooking(int id)
+        {
+            var booking = await _context.Bookings.FindAsync(id);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+            booking.Status = "Rechazado";
+            booking.Confirmed = false; // Mark as not confirmed
+            _context.Entry(booking).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!BookingExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return NoContent();
+        }
+
         // POST: api/Bookings
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]

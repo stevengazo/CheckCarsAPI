@@ -37,7 +37,7 @@ namespace CheckCarsAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCars()
         {
-            return await _context.Cars.Where(ee=> ee.IsAvailable && !ee.Deleted).ToListAsync();
+            return await _context.Cars.Where(ee=> !ee.Deleted).ToListAsync();
         }
 
 
@@ -87,6 +87,7 @@ namespace CheckCarsAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCar(string id, Car car)
         {
+            Console.WriteLine($"available: {car.IsAvailable}");
             if (id != car.CarId)
             {
                 return BadRequest();

@@ -154,6 +154,10 @@ namespace CheckCarsAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
+            if(user.EmailConfirmed == false)
+            {
+                return BadRequest(new { message = "Email not confirmed. Please contact an administrator" });
+            }
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 var token = GenerateJwtToken(user);

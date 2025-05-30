@@ -92,7 +92,7 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(car).State = EntityState.Modified;
+            _context.Cars.Update(car);
 
             try
             {

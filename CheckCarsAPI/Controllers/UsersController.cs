@@ -54,7 +54,7 @@ namespace CheckCarsAPI.Controllers
         {
             Dictionary<string, string> dic = new Dictionary<string, string>();
             dic = _userManager.Users.ToDictionary(U => U.Id, U => U.UserName);
-            return Ok(dic); 
+            return Ok(dic);
         }
 
         [HttpGet("{id}")]
@@ -77,7 +77,7 @@ namespace CheckCarsAPI.Controllers
                 return BadRequest("Invalid user data");
             }
 
-            var exists =  _DbContext.Users.Where(e => e.Email == user.Email || e.UserName == user.UserName).Any();
+            var exists = _DbContext.Users.Where(e => e.Email == user.Email || e.UserName == user.UserName).Any();
             if (exists)
             {
                 return BadRequest("User with this email or username already exists");
@@ -88,7 +88,7 @@ namespace CheckCarsAPI.Controllers
                 Email = user.Email,
                 UserName = user.UserName,
                 PasswordHash = _userManager.PasswordHasher.HashPassword(null, user.Password),
-                EmailConfirmed= true // Confirm email by default
+                EmailConfirmed = true // Confirm email by default
             };
 
             var result = await _userManager.CreateAsync(newUser);
@@ -129,18 +129,31 @@ namespace CheckCarsAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> ConfirmUser(string id)
         {
-            var User =await _userManager.FindByIdAsync(id);
+            var User = await _userManager.FindByIdAsync(id);
             if (User == null)
             {
                 return NotFound();
             }
 
-            User.EmailConfirmed =  !User.EmailConfirmed;
-            
+            User.EmailConfirmed = !User.EmailConfirmed;
+
             _DbContext.Users.Update(User);
             _DbContext.SaveChanges();
 
 
+            return NoContent();
+        }
+
+        [HttpPatch("password")]
+        public async Task<IActionResult> PasswordUpdate([FromBody] UserPassword userPassword)
+        {
+            var User = await _userManager.FindByEmailAsync(userPassword.Email);
+            if (User == null)
+            {
+                return NotFound();
+            }
+            _userManager.RemovePasswordAsync(User);
+            _userManager.AddPasswordAsync(User, userPassword.Password);
             return NoContent();
         }
 
@@ -167,6 +180,11 @@ namespace CheckCarsAPI.Controllers
         #endregion
 
 
+        public class UserPassword
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
         public class UserModel
         {
             public string Email { get; set; }

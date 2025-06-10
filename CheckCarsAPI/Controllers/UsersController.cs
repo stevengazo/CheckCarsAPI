@@ -125,6 +125,25 @@ namespace CheckCarsAPI.Controllers
             return BadRequest(result.Errors);
         }
 
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> ConfirmUser(string id)
+        {
+            var User =await _userManager.FindByIdAsync(id);
+            if (User == null)
+            {
+                return NotFound();
+            }
+
+            User.EmailConfirmed =  !User.EmailConfirmed;
+            
+            _DbContext.Users.Update(User);
+            _DbContext.SaveChanges();
+
+
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> DeleteUser(string id)

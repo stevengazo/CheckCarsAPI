@@ -147,15 +147,27 @@ namespace CheckCarsAPI.Controllers
         [HttpPatch("password")]
         public async Task<IActionResult> PasswordUpdate([FromBody] UserPassword userPassword)
         {
-            var User = await _userManager.FindByEmailAsync(userPassword.Email);
-            if (User == null)
+            var user = await _userManager.FindByEmailAsync(userPassword.Email);
+            if (user == null)
             {
                 return NotFound();
             }
-            _userManager.RemovePasswordAsync(User);
-            _userManager.AddPasswordAsync(User, userPassword.Password);
+
+            var removeResult = await _userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+            {
+                return BadRequest(removeResult.Errors);
+            }
+
+            var addResult = await _userManager.AddPasswordAsync(user, userPassword.Password);
+            if (!addResult.Succeeded)
+            {
+                return BadRequest(addResult.Errors);
+            }
+
             return NoContent();
         }
+
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]

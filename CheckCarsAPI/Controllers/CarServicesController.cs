@@ -35,6 +35,50 @@ namespace CheckCarsAPI.Controllers
         #endregion
 
         #region Endpoints
+        // GET: API/CarServies/Resumen
+        [HttpGet("Resume")]
+        public async Task<IActionResult> Resume()
+        {
+            var resumen = await _context.Cars
+                .Select(car => new CarResumenDto
+                {
+                    CarId = car.CarId,
+                    Brand = car.Brand,
+                    Model = car.Model,
+                    Plate = car.Plate,
+
+                    ServiciosRecientes = car.Services
+                        .Where(s => s.Date.Year == 2025)
+                        .Take(100)
+                        .OrderByDescending(s => s.Date)
+                        .Select(s => new CarServiceDto
+                        {
+                            CarServiceId = s.CarServiceId,
+                            Date = s.Date,
+                            Description = s.Description,
+                            Mileage = s.mileage,
+                            NextMileage = s.NextMileage,
+                            Title = s.Title,
+                            Type = s.Type
+                        }).ToList(),
+
+                    UltimoRetorno = car.VehicleReturns
+                        .OrderByDescending(v => v.Created)
+                        .Select(v => new VehicleReturnDto
+                        {
+                            ReportId = v.ReportId,
+                            Mileage = v.mileage,
+                            Created = v.Created,
+                            Author = v.Author
+                        }).FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return Ok(resumen);
+        }
+
+
+
         // GET: api/CarServices
         /*  [HttpGet()]
         public async Task<ActionResult<IEnumerable<CarService>>> GetCarsService()
@@ -132,6 +176,40 @@ namespace CheckCarsAPI.Controllers
         private bool CarServiceExists(int id)
         {
             return _context.CarsService.Any(e => e.CarServiceId == id);
+        }
+
+        #endregion
+
+
+        #region Class DTO
+
+        public class CarResumenDto
+        {
+            public string CarId { get; set; }
+            public string Brand { get; set; }
+            public string Model { get; set; }
+            public string Plate { get; set; }
+            public List<CarServiceDto> ServiciosRecientes { get; set; }
+            public VehicleReturnDto UltimoRetorno { get; set; }
+        }
+
+        public class CarServiceDto
+        {
+            public int CarServiceId { get; set; }
+            public DateTime Date { get; set; }
+            public string Description { get; set; }
+            public double Mileage { get; set; }
+            public double? NextMileage { get; set; }
+            public string Title { get; set; }
+            public string Type { get; set; }
+        }
+
+        public class VehicleReturnDto
+        {
+            public string ReportId { get; set; }
+            public double Mileage { get; set; }
+            public DateTime Created { get; set; }
+            public string Author { get; set; }
         }
 
         #endregion

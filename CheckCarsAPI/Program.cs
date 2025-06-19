@@ -64,7 +64,7 @@ catch (Exception rf)
 #endregion
 
 Console.WriteLine("[INFO] Configuring Kestrel and URLs...");
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+builder.WebHost.UseUrls("http://0.0.0.0:5050");
 
 #region Identity Configuration
 
@@ -97,19 +97,7 @@ builder.Services.AddTransient<EmailService>();
 Console.WriteLine("[INFO] Setting up CORS policy...");
 
 // Política de CORS para desarrollo
-if (builder.Environment.IsDevelopment())
-{
-   /* builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("DevelopmentPolicy", policy =>
-        {
-            policy.WithOrigins("http://localhost:5173") // o cualquier otro origen en desarrollo
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials(); // Esto permite las cookies si es necesario
-        });
-    });**/
-}
+
 
 builder.Services.AddCors(options =>
 {
@@ -304,15 +292,16 @@ Console.WriteLine("[INFO] Starting middleware pipeline...");
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseRouting();
+app.UseCors("AnyOrigin");
 
 // Aplica la política solo en desarrollo
 if (app.Environment.IsDevelopment())
 {
    // app.UseHttpsRedirection();
- //   app.UseCors("DevelopmentPolicy");
+   // app.UseCors("DevelopmentPolicy");
 }
 
-app.UseCors("AnyOrigin");
 app.UseAuthentication();
 //app.UseHttpsRedirection();
 app.UseAuthorization();

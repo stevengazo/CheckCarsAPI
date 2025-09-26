@@ -93,6 +93,9 @@ namespace CheckCarsAPI.Controllers
 
             var result = await _userManager.CreateAsync(newUser);
 
+            var userN = await _userManager.FindByEmailAsync(newUser.Email);
+            var roleResult = await _userManager.AddToRoleAsync(userN, "User");
+
             if (result.Succeeded)
             {
                 return Ok(user);

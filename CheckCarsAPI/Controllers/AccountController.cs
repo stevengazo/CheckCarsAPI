@@ -21,7 +21,7 @@ namespace CheckCarsAPI.Controllers
     public class AccountController : ControllerBase
     {
         #region Private Fields
-     
+
         private readonly EmailService _emailService;
         private readonly UserManager<CheckCarsAPI.Models.UserApp> _userManager;
         private readonly SignInManager<CheckCarsAPI.Models.UserApp> _signInManager;
@@ -153,18 +153,40 @@ namespace CheckCarsAPI.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if(user.EmailConfirmed == false)
+            UserApp user = null;
+
+            // Verificar si se proporcionó un email o un nombre de usuario
+            if (!string.IsNullOrEmpty(model.Email))
             {
-                return BadRequest(new { message = "Email not confirmed. Please contact an administrator" });
+                user = await _userManager.FindByEmailAsync(model.Email);
             }
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+
+            if (user == null && !string.IsNullOrEmpty(model.Username))
             {
-                var token = GenerateJwtToken(user);
-                return Ok(new { Token = token });
+                user = await _userManager.FindByNameAsync(model.Username);
             }
-            return Unauthorized();
+
+            if (user == null)
+            {
+                return BadRequest(new { message = "Usuario no encontrado" });
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                return BadRequest(new { message = "Correo no confirmado. Por favor, contacte al administrador." });
+            }
+
+
+            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                return Unauthorized(new { message = "Credenciales incorrectas" });
+            }
+
+            var token = GenerateJwtToken(user);
+            return Ok(new { Token = token });
         }
+
+
 
         [HttpPost("Forgot")]
         public async Task<IActionResult> ForgotPassword(string email)
@@ -282,12 +304,14 @@ namespace CheckCarsAPI.Controllers
             {
                 var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? ""),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-                var userRoles = _userManager.GetRolesAsync(user).Result;
 
+
+                var userRoles = _userManager.GetRolesAsync(user).Result;
+                Console.WriteLine(string.Join(",", userRoles));
                 foreach (var role in userRoles)
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
@@ -335,6 +359,7 @@ namespace CheckCarsAPI.Controllers
         public class LoginModel
         {
             public string Email { get; set; } = string.Empty;
+            public string Username { get; set; } = string.Empty;
             public string Password { get; set; } = string.Empty;
         }
 

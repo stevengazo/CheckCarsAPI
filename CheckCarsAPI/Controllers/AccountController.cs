@@ -331,7 +331,7 @@ namespace CheckCarsAPI.Controllers
                     issuer: _configuration["Jwt:Issuer"],
                     audience: _configuration["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddHours(12),
+                    expires: DateTime.Now.AddMonths(1),
                     signingCredentials: creds);
 
                 return new JwtSecurityTokenHandler().WriteToken(token);

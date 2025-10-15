@@ -12,10 +12,6 @@ using Serilog;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Text;
-using Serilog;
-using Serilog.Sinks.MSSqlServer;
-using System.Collections.ObjectModel;
-using System.Data;
 using static Serilog.Sinks.MSSqlServer.ColumnOptions;
 
 
@@ -101,10 +97,11 @@ Console.WriteLine("[INFO] Setting up CORS policy...");
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AnyOrigin", policy =>
-        policy.AllowAnyOrigin()
+    options.AddPolicy("VehiculosCors", policy =>
+        policy.WithOrigins("https://vehiculos.stevengazo.co.cr")
               .AllowAnyMethod()
-              .AllowAnyHeader());
+              .AllowAnyHeader()
+              .AllowCredentials());
 });
 
 #endregion
@@ -293,7 +290,8 @@ Console.WriteLine("[INFO] Starting middleware pipeline...");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseRouting();
-app.UseCors("AnyOrigin");
+app.UseCors("VehiculosCors");
+
 
 // Aplica la política solo en desarrollo
 if (app.Environment.IsDevelopment())

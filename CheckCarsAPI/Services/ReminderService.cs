@@ -42,6 +42,7 @@ public class ReminderService
                 .Include(e => e.ReminderDests)
                 .Where(r => r.ReminderDate.Date >= startDate
                          && r.ReminderDate.Date <= endDate
+                         && !r.SendIt
                          && !r.IsCompleted)
                 .ToListAsync();
 

@@ -35,14 +35,25 @@ namespace CheckCarsAPI.Services
 
         public bool DeleteFile(string filePath)
         {
-            var fullPath = Path.Combine(_env.WebRootPath, filePath);
-
-            if (!File.Exists(fullPath))
+            if (string.IsNullOrWhiteSpace(filePath))
                 return false;
 
-            File.Delete(fullPath);
+            try
+            {
+                // Misma base que SaveFileAsync (images/). _env.WebRootPath puede ser null (sin wwwroot).
+                var normalized = filePath.Replace('/', Path.DirectorySeparatorChar);
+                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "images", normalized);
 
-            return true;
+                if (!File.Exists(fullPath))
+                    return false;
+
+                File.Delete(fullPath);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

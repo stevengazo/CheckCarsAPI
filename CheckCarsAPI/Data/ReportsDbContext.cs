@@ -69,6 +69,16 @@ namespace CheckCarsAPI.Data
         public DbSet<VehicleAttachment> VehicleAttachments { get; set; }
 
         /// <summary>
+        /// Gets or sets the DbSet of form definitions (configurable forms).
+        /// </summary>
+        public DbSet<FormDefinition> FormDefinitions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DbSet of dynamic reports.
+        /// </summary>
+        public DbSet<DynamicReport> DynamicReports { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ReportsDbContext"/> class.
         /// </summary>
         /// <param name="options">The options to be used by the DbContext.</param>
@@ -83,6 +93,17 @@ namespace CheckCarsAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Report>().UseTpcMappingStrategy();
+
+            // Campos y slots de foto como columnas JSON (EF Core 9 -> SQL Server nvarchar(max)).
+            modelBuilder.Entity<FormDefinition>().OwnsMany(f => f.Fields, b => b.ToJson());
+            modelBuilder.Entity<FormDefinition>().OwnsMany(f => f.PhotoSlots, b => b.ToJson());
+
+            // Relación DynamicReport 1:N Photo (independiente del mapeo TPC de Report).
+            modelBuilder.Entity<DynamicReport>()
+                .HasMany(d => d.Photos)
+                .WithOne(p => p.DynamicReport)
+                .HasForeignKey(p => p.DynamicReportId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

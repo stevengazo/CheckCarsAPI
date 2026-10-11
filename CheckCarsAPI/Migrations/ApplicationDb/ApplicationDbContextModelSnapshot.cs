@@ -82,6 +82,43 @@ namespace CheckCarsAPI.Migrations.ApplicationDb
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId", "IsRead");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.UserApp", b =>
                 {
                     b.Property<string>("Id")
@@ -180,24 +217,28 @@ namespace CheckCarsAPI.Migrations.ApplicationDb
                         new
                         {
                             Id = "100",
+                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000100",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "200",
+                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000200",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "300",
+                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000300",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = "400",
+                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000400",
                             Name = "Guest",
                             NormalizedName = "GUEST"
                         });

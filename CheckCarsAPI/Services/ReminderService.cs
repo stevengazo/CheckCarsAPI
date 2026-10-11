@@ -1,29 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Data; // Ajusta el namespace según tu proyecto
 using CheckCarsAPI.Services;
-using CheckCarsAPI.Hubs;
-using Microsoft.AspNetCore.SignalR;
-using NuGet.Protocol;
-using Newtonsoft.Json;
 
 public class ReminderService
 {
     private readonly ReportsDbContext _context;
     private readonly EmailService _emailService;
     private readonly ApplicationDbContext _applicationDbContext;
-    IHubContext<NotificationHub> _hub;
-    private readonly IHubContext<NotificationHub> hub;
+    private readonly NotificationService _notificationService;
 
     public ReminderService(
         ReportsDbContext context,
         EmailService emailService,
-        IHubContext<NotificationHub> hub,
+        NotificationService notificationService,
         ApplicationDbContext applicationDbContext
         )
     {
         _context = context;
         _emailService = emailService;
-        _hub = hub;
+        _notificationService = notificationService;
         _applicationDbContext = applicationDbContext;
     }
 
@@ -49,16 +44,29 @@ public class ReminderService
             // recorre los recordatorios
             foreach (var reminder in reminders)
             {
-                // si el recordatorio tiene destinatarios, envía el correo a cada uno de ellos
+                var vehicleLabel = reminder.Car != null
+                    ? $"{reminder.Car.Brand} {reminder.Car.Model} ({reminder.Car.Plate})"
+                    : "Vehículo";
+
+                // si el recordatorio tiene destinatarios, envía el correo y la
+                // notificación (persistida + en vivo) a cada uno de ellos
                 if (reminder.ReminderDests != null && reminder.ReminderDests.Count > 0)
                 {
                     foreach (var dest in reminder.ReminderDests)
                     {
-                        var user = _applicationDbContext.Users.FirstOrDefault(e => e.Id == dest.UserId);
-                        if (user != null)
+                        if (string.IsNullOrWhiteSpace(dest.UserId))
                         {
-                            string subject = $"Recordatorio CheckCars - {reminder.Title ?? "Sin Titulo"}";
-                            string htmlMessage = $@"
+                            continue;
+                        }
+
+                        var user = _applicationDbContext.Users.FirstOrDefault(e => e.Id == dest.UserId);
+                        if (user == null)
+                        {
+                            continue;
+                        }
+
+                        string subject = $"Recordatorio CheckCars - {reminder.Title ?? "Sin Titulo"}";
+                        string htmlMessage = $@"
                                     <html>
                                     <head>
                                         <style>
@@ -74,7 +82,7 @@ public class ReminderService
                                             <div class='header'>🔔 Recordatorio pendiente - CheckCars</div>
                                             <div class='content'>
                                                 <p><strong>Título:</strong> {reminder.Title ?? "Sin título"}</p>
-                                                <p><strong>Vehículo:</strong> {reminder.Car.Brand} {reminder.Car.Model} ({reminder.Car.Plate})</p>
+                                                <p><strong>Vehículo:</strong> {vehicleLabel}</p>
                                                 <p><strong>Fecha:</strong> {reminder.ReminderDate:dd/MM/yyyy}</p>
                                                 <p><strong>Descripción:</strong></p>
                                                 <p>{reminder.Description ?? "Sin descripción."}</p>
@@ -86,17 +94,19 @@ public class ReminderService
                                     </body>
                                     </html>";
 
+                        if (!string.IsNullOrWhiteSpace(user.Email))
+                        {
                             await _emailService.SendEmailAsync(user.Email, subject, htmlMessage);
                         }
+
+                        await _notificationService.NotifyUserAsync(
+                            userId: dest.UserId,
+                            title: reminder.Title ?? "Recordatorio",
+                            message: $"{vehicleLabel} · {reminder.ReminderDate:dd/MM/yyyy}. {reminder.Description ?? string.Empty}".Trim(),
+                            type: "Reminder",
+                            url: $"/cars/{reminder.CarId}");
                     }
                 }
-
-                var json = JsonConvert.SerializeObject(reminder, new JsonSerializerSettings
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                });
-
-                await _hub.Clients.All.SendAsync("ReceiveNotifications", json);
 
                 // Marcar el recordatorio como enviado
                 reminder.SendIt = true;

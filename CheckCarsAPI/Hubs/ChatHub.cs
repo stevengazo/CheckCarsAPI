@@ -1,6 +1,8 @@
 // ChatHub.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
+[Authorize]
 public class ChatHub : Hub
 {
     public async Task SendMessageToGroup(int chatId, string senderId, string message)

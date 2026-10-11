@@ -30,6 +30,11 @@ namespace CheckCarsAPI.Data
         public DbSet<Message> Messages { get; set; }
 
         /// <summary>
+        /// Gets or sets the DbSet of user notifications.
+        /// </summary>
+        public DbSet<Notification> Notifications { get; set; }
+
+        /// <summary>
         /// Configures the database context options.
         /// </summary>
         /// <param name="optionsBuilder">The options builder to configure.</param>
@@ -65,32 +70,43 @@ namespace CheckCarsAPI.Data
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ChatId);
 
+            // Notifications are queried per recipient, most often filtering by read state.
+            builder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.IsRead });
+
             // Seed default roles into the database
+            // ConcurrencyStamp must be fixed; otherwise EF generates a random value
+            // on every model build, which never matches the migration snapshot and
+            // makes Database.Migrate() fail with PendingModelChangesWarning.
             List<IdentityRole> identityRole = new()
             {
                 new IdentityRole
                 {
                     Id = "100",
                     Name = "Admin",
-                    NormalizedName = "ADMIN"
+                    NormalizedName = "ADMIN",
+                    ConcurrencyStamp = "00000000-0000-0000-0000-000000000100"
                 },
                 new IdentityRole
                 {
                     Id = "200",
                     Name = "Manager",
-                    NormalizedName = "MANAGER"
+                    NormalizedName = "MANAGER",
+                    ConcurrencyStamp = "00000000-0000-0000-0000-000000000200"
                 },
                 new IdentityRole
                 {
                     Id = "300",
                     Name = "User",
-                    NormalizedName = "USER"
+                    NormalizedName = "USER",
+                    ConcurrencyStamp = "00000000-0000-0000-0000-000000000300"
                 },
                 new IdentityRole
                 {
                     Id = "400",
                     Name = "Guest",
-                    NormalizedName = "GUEST"
+                    NormalizedName = "GUEST",
+                    ConcurrencyStamp = "00000000-0000-0000-0000-000000000400"
                 }
             };
 

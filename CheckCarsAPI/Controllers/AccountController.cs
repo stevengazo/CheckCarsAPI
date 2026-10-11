@@ -305,7 +305,10 @@ namespace CheckCarsAPI.Controllers
                 var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? ""),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            // Stable user id, used for SignalR per-user targeting (Clients.User)
+            // and to identify the caller in authorized controllers.
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
 
 

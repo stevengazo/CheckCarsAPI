@@ -198,6 +198,79 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.ToTable("commentaries");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.DynamicReport", b =>
+                {
+                    b.Property<string>("ReportId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Author")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CarId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CarPlate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FormDefinitionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("DynamicReports");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.FormDefinition", b =>
+                {
+                    b.Property<string>("FormDefinitionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("int");
+
+                    b.HasKey("FormDefinitionId");
+
+                    b.ToTable("FormDefinitions");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
                     b.Property<string>("PhotoId")
@@ -205,6 +278,9 @@ namespace CheckCarsAPI.Migrations.CarsContext
 
                     b.Property<DateTime>("DateTaken")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("DynamicReportId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
@@ -215,7 +291,12 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Property<string>("ReportId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("SlotKey")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("PhotoId");
+
+                    b.HasIndex("DynamicReportId");
 
                     b.HasIndex("ReportId");
 
@@ -485,11 +566,116 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Navigation("Report");
                 });
 
+            modelBuilder.Entity("CheckCarsAPI.Models.DynamicReport", b =>
+                {
+                    b.HasOne("CheckCarsAPI.Models.Car", "Car")
+                        .WithMany()
+                        .HasForeignKey("CarId");
+
+                    b.Navigation("Car");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.FormDefinition", b =>
+                {
+                    b.OwnsMany("CheckCarsAPI.Models.FormField", "Fields", b1 =>
+                        {
+                            b1.Property<string>("FormDefinitionId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Key")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Label")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<double?>("Max")
+                                .HasColumnType("float");
+
+                            b1.Property<double?>("Min")
+                                .HasColumnType("float");
+
+                            b1.PrimitiveCollection<string>("Options")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<int>("Order")
+                                .HasColumnType("int");
+
+                            b1.Property<bool>("Required")
+                                .HasColumnType("bit");
+
+                            b1.Property<string>("Type")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("FormDefinitionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("FormDefinitions");
+
+                            b1.ToJson("Fields");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FormDefinitionId");
+                        });
+
+                    b.OwnsMany("CheckCarsAPI.Models.PhotoSlot", "PhotoSlots", b1 =>
+                        {
+                            b1.Property<string>("FormDefinitionId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Key")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Label")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<bool>("Multiple")
+                                .HasColumnType("bit");
+
+                            b1.Property<int>("Order")
+                                .HasColumnType("int");
+
+                            b1.Property<bool>("Required")
+                                .HasColumnType("bit");
+
+                            b1.HasKey("FormDefinitionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("FormDefinitions");
+
+                            b1.ToJson("PhotoSlots");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FormDefinitionId");
+                        });
+
+                    b.Navigation("Fields");
+
+                    b.Navigation("PhotoSlots");
+                });
+
             modelBuilder.Entity("CheckCarsAPI.Models.Photo", b =>
                 {
+                    b.HasOne("CheckCarsAPI.Models.DynamicReport", "DynamicReport")
+                        .WithMany("Photos")
+                        .HasForeignKey("DynamicReportId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("CheckCarsAPI.Models.Report", "Report")
                         .WithMany("Photos")
                         .HasForeignKey("ReportId");
+
+                    b.Navigation("DynamicReport");
 
                     b.Navigation("Report");
                 });
@@ -580,6 +766,11 @@ namespace CheckCarsAPI.Migrations.CarsContext
                     b.Navigation("VehicleAttachments");
 
                     b.Navigation("VehicleReturns");
+                });
+
+            modelBuilder.Entity("CheckCarsAPI.Models.DynamicReport", b =>
+                {
+                    b.Navigation("Photos");
                 });
 
             modelBuilder.Entity("CheckCarsAPI.Models.Reminder", b =>

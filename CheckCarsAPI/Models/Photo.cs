@@ -46,5 +46,16 @@ namespace CheckCarsAPI.Models
         /// Gets or sets the report related to this photo (optional).
         /// </summary>
         public Report? Report { get; set; }
+
+        /// <summary>
+        /// Clave del slot de foto al que pertenece (para formularios dinámicos). Opcional.
+        /// </summary>
+        public string? SlotKey { get; set; }
+
+        /// <summary>
+        /// Reporte dinámico asociado (formularios dinámicos). Opcional.
+        /// </summary>
+        public string? DynamicReportId { get; set; }
+        public DynamicReport? DynamicReport { get; set; }
     }
 }

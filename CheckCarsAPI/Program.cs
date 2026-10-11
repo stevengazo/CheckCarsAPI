@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using Serilog.Sinks.MSSqlServer;
 using Serilog;
 using System.Collections.ObjectModel;
@@ -171,6 +172,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    // Keep "sub" as-is instead of mapping it to NameIdentifier, so the explicit
+    // NameIdentifier claim (user.Id) is the single value used by SignalR's
+    // per-user targeting and by authorized controllers.
+    options.MapInboundClaims = false;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -179,7 +185,27 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role
+    };
+
+    // SignalR (WebSockets) cannot send Authorization headers, so the client
+    // passes the JWT as the "access_token" query string parameter. Pull it in
+    // only for the hub endpoints.
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/notificationhub") || path.StartsWithSegments("/chathub")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -198,6 +224,7 @@ builder.Services.AddEndpointsApiExplorer();
 #region Custom Services
 
 Console.WriteLine("[INFO] Registering custom services...");
+builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ReminderService>();
 builder.Services.AddHostedService<ReminderBackgroundService>();
 builder.Services.AddScoped<IFileService, FileService>();

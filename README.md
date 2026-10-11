@@ -1,79 +1,105 @@
-# CheckCars API
+<div align="center">
 
-## Overview
-CheckCars API is a RESTful service built with .NET 9 and SQL Server. It provides authentication for users and basic CRUD operations to manage car reports. The application is containerized using Docker for easy deployment and scalability.
+# ⚙️ CheckCars API
 
-## Features
-- User authentication with JWT tokens.
-- CRUD operations for car reports.
-- Docker support for containerized deployment.
-- SQL Server database integration.
+**Backend RESTful para la gestión de flotas vehiculares**
 
-## Technologies Used
-- .NET 9
-- SQL Server
-- Docker
-- JWT Authentication
-- Entity Framework Core
+![.NET](https://img.shields.io/badge/.NET-9-512BD4?logo=dotnet&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoftsqlserver&logoColor=white)
+![EF Core](https://img.shields.io/badge/EF%20Core-9-512BD4)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-000000?logo=jsonwebtokens&logoColor=white)
 
-## Prerequisites
-Ensure you have the following installed on your system:
-- [Docker](https://www.docker.com/)
-- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+</div>
 
-## Getting Started
-### 1. Clone the Repository
-```sh
-git clone https://github.com/yourusername/CheckCarsAPI.git
-cd CheckCarsAPI
+---
+
+## 📋 Descripción
+
+CheckCars API es el núcleo del ecosistema **CheckCars**. Expone una API RESTful construida con **.NET 9** y **Entity Framework Core** sobre **SQL Server**, con autenticación JWT, tiempo real (SignalR) y despliegue en **Docker**. Da servicio al [dashboard web](https://github.com/stevengazo/checkcars-web) y a la [app móvil](https://github.com/stevengazo/CheckCar).
+
+## ✨ Características
+
+- 🔐 **Autenticación JWT** con ASP.NET Identity y roles (Admin / Manager / User / Guest).
+- 🚙 **Gestión de vehículos** (CRUD, imágenes, servicios, adjuntos, recordatorios).
+- 📝 **Formularios dinámicos**: define campos y fotos requeridas por tipo de reporte (`FormDefinition`) y captura reportes flexibles (`DynamicReport`) usando **columnas JSON**.
+- 📄 **Reportes**: salidas/entradas, averías, accidentes, devoluciones — con fotos y geolocalización.
+- 📅 **Reservas** de vehículos con confirmación/cancelación.
+- 📊 **Analítica** (endpoints de gráficas por vehículo, usuario, marca, tipo y fecha).
+- 💬 **Chat** y 🔔 **notificaciones** en tiempo real vía **SignalR**.
+- 🖼️ **Archivos estáticos** servidos bajo `/images`.
+- 📝 **Logging** con Serilog.
+
+## 🏗️ Modelo de datos
+
+Dos `DbContext` sobre **bases de datos separadas**:
+
+| Contexto | Base de datos | Contenido |
+|----------|---------------|-----------|
+| `ApplicationDbContext` | Identity/Users | Usuarios, roles, chats, mensajes, notificaciones |
+| `ReportsDbContext` | Reports | Vehículos, reportes (TPC), reservas, servicios, formularios dinámicos |
+
+> Los reportes fijos usan **Table-per-Concrete-class (TPC)**; los formularios dinámicos usan **columnas JSON** (`OwnsMany().ToJson()`).
+
+## 🚀 Puesta en marcha
+
+### Requisitos
+- [Docker](https://www.docker.com/) y Docker Compose
+- o [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) + SQL Server
+
+### Con Docker Compose
+```bash
+docker compose up --build
 ```
+Levanta la API + una instancia de SQL Server 2022.
 
-### 2. Environment Variables
-The application uses environment variables for configuration. Modify them as needed in `docker-compose.yml`:
+- **API:** `http://localhost:8085`
+- **Swagger:** `http://localhost:8085/swagger`
+
+> ℹ️ La app escucha internamente en el **puerto 5050** (`Program.cs`); el `docker-compose` publica ese puerto en el host (p. ej. `8085:5050`).
+
+## 📡 Endpoints principales
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/Account/Login` | Autenticación |
+| POST | `/api/Account/Register` | Registro de usuario |
+| GET/POST/PUT/DELETE | `/api/Cars` | CRUD de vehículos |
+| POST | `/api/Cars/{id}/image` | Subir imagen de vehículo |
+| GET/POST | `/api/FormDefinitions` | Definiciones de formularios dinámicos |
+| POST | `/api/DynamicReports/form` | Crear reporte dinámico (multipart) |
+| GET | `/api/DynamicReports/search` | Buscar reportes dinámicos |
+| GET/POST | `/api/Bookings` | Reservas |
+| GET | `/api/Charts/*` | Analítica |
+| GET/POST | `/api/Notifications` | Notificaciones |
+
+## ⚙️ Configuración
+
+Variables clave (ver `docker-compose.yml`):
+
 ```yaml
-  - ASPNETCORE_ENVIRONMENT=Development
-  - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=TestCheckCarsUsers;User Id=sa;Password=Siera4388$;TrustServerCertificate=True;
-  - ConnectionStrings__ReportsConnection=Server=sqlserver,1433;Database=TestCheckCarsReports;User Id=sa;Password=Siera4388$;TrustServerCertificate=True;
-  - Jwt__Issuer=yourdomain.com
-  - Jwt__Audience=yourdomain.com
-  - Jwt__Key=c3VwZXJzZWN1cmVzc2ltdWx0YXBhc3N3b3JkYmFzaWNhbmdsaWZl
+ConnectionStrings__IdentityUsers: Server=sqlserver,1433;Database=CheckCarsUsers;...
+ConnectionStrings__ReportsConnection: Server=sqlserver,1433;Database=CheckCarsReports;...
+Jwt__Issuer / Jwt__Audience / Jwt__Key
+Smtp__Host / Smtp__Port / Smtp__Username / Smtp__Password
+StaticFiles__ImagesPath: images
 ```
+> ⚠️ Usa valores seguros (contraseñas, clave JWT) en producción; no uses los de ejemplo.
 
-### 3. Run the Application with Docker
-To start the API and database using Docker Compose, run:
-```sh
-docker-compose up --build
+## 🗃️ Migraciones
+
+```bash
+dotnet ef migrations add <Nombre> --context ReportsDbContext
+dotnet ef migrations add <Nombre> --context ApplicationDbContext
 ```
+Las migraciones se aplican automáticamente al arrancar.
 
-This will:
-- Build and start the .NET API container.
-- Start an SQL Server instance.
+## 🔗 Ecosistema CheckCars
 
-### 4. Accessing the API
-Once running, you can access the API at:
-- **API Base URL:** `http://localhost:8080`
-- **Swagger UI:** `http://localhost:8080/swagger`
+- ⚙️ **API** — este repositorio
+- 🌐 [CheckCars Dashboard](https://github.com/stevengazo/checkcars-web) — frontend React
+- 📱 [CheckCar](https://github.com/stevengazo/CheckCar) — app móvil .NET MAUI
 
-## Endpoints
-| Method | Endpoint | Description |
-|--------|---------|-------------|
-| POST | `/api/auth/login` | User authentication |
-| POST | `/api/auth/register` | Register a new user |
-| GET | `/api/reports` | Retrieve all car reports |
-| GET | `/api/reports/{id}` | Retrieve a specific report |
-| POST | `/api/reports` | Create a new report |
-| PUT | `/api/reports/{id}` | Update an existing report |
-| DELETE | `/api/reports/{id}` | Delete a report |
+## 📄 Licencia
 
-## Stopping the Application
-To stop the containers, run:
-```sh
-docker-compose down
-```
-
-## License
-This project is licensed under the MIT License.
-
-## Contact
-For any questions or issues, feel free to reach out at [stevengazo.co.cr](https://stevengazo.co.cr).
-
+MIT · **Steven Gazo** · [stevengazo.co.cr](https://stevengazo.co.cr)

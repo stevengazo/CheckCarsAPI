@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CheckCarsAPI.Data;
 using CheckCarsAPI.Models;
+using CheckCarsAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace CheckCarsAPI.Controllers
@@ -19,14 +20,16 @@ namespace CheckCarsAPI.Controllers
         #region Private Fields
         
         private readonly ReportsDbContext _context;
+        private readonly IFileService _fileService;
 
         #endregion
 
         #region Constructors
 
-        public CarsController(ReportsDbContext context)
+        public CarsController(ReportsDbContext context, IFileService fileService)
         {
             _context = context;
+            _fileService = fileService;
         }
 
         #endregion
@@ -122,6 +125,37 @@ namespace CheckCarsAPI.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetCar", new { id = car.CarId }, car);
+        }
+
+        // POST: api/Cars/{id}/image
+        // Sube/reemplaza la imagen del vehículo. Devuelve la ruta relativa servida bajo /images.
+        [HttpPost("{id}/image")]
+        public async Task<IActionResult> UploadCarImage(string id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No se recibió ningún archivo.");
+            }
+
+            var car = await _context.Cars.FirstOrDefaultAsync(c => c.CarId == id);
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+            // Borra la imagen anterior si existía.
+            if (!string.IsNullOrWhiteSpace(car.ImagePath))
+            {
+                _fileService.DeleteFile(car.ImagePath);
+            }
+
+            // Guarda en images/cars/<guid>.<ext> y devuelve "cars/<guid>.<ext>".
+            var relativePath = await _fileService.SaveFileAsync(file, "cars");
+            car.ImagePath = relativePath.Replace("\\", "/");
+            _context.Cars.Update(car);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { imagePath = car.ImagePath });
         }
 
         // DELETE: api/Cars/5
